@@ -6,6 +6,7 @@ import Oboarding from "./pages/User/Oboarding";
 import Onboarding from "./pages/User/Oboarding";
 import Spinner from "./components/Spinner";
 import SelectTarotista from "./pages/User/SelectTarotista";
+import InstallPrompt from "./components/InstallPrompt";
 
 
 const Landing =  lazy(() => import('./pages/User/Landing'))
@@ -91,6 +92,8 @@ function App() {
      <Suspense fallback = { <Spinner/> }>
 
      <RouterProvider router={router} />
+
+     <InstallPrompt/>
      </Suspense>
     
     </>

@@ -1,0 +1,22 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap');
+
+@import "tailwindcss";
+
+
+@theme {
+    --font-uncial: "Uncial Antiqua", "sans-serif";
+    --font-gara: "Cormorant Garamond";
+    --font-cinzel: "Cinzel";
+    --breakpoint-3xl: 1920px;
+    --color-primario: #3A0164;
+    --color-secundario:#513878;
+    --color-accent: #6057A8;
+    --color-highlight: #7E1483;
+    --color-softBlue: #6469CB;
+
+   
+
+  }

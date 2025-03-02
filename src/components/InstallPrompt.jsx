@@ -50,9 +50,11 @@ const InstallPrompt = () => {
             alt="Logo"
             className="w-24 mx-auto mb-6"
           />
-          <h2 className="text-2xl font-semibold mb-4">¡Instala Sortis!</h2>
+          <h2 className="text-2xl font-semibold mb-4"> ¡Descubre tu futuro al instante!</h2>
           <p className="text-lg mb-6">
-            Esta es una app de tarot que puedes instalar de forma nativa en tu sistema operativo.
+         
+
+          Instala Sortis, tu app de tarot personalizada, y lleva las cartas en tu bolsillo. Accede a lecturas místicas, consejos sabios y más, todo al alcance de tu mano. ¡Hazla nativa en tu dispositivo y empieza a explorar tu destino ahora mismo!
           </p>
           <button
             onClick={handleInstallClick}

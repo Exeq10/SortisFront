@@ -1,31 +1,25 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const InstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallModal, setShowInstallModal] = useState(false);
 
   useEffect(() => {
-    // Escuchar el evento beforeinstallprompt
     const handleBeforeInstallPrompt = (e) => {
-      // Prevenir el comportamiento por defecto (mostrar el banner de instalación del navegador)
       e.preventDefault();
-      // Guardar el evento para usarlo después
       setDeferredPrompt(e);
-      // Mostrar el modal de instalación
       setShowInstallModal(true);
     };
 
-    // Agregar el listener para el evento
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     return () => {
-      // Limpiar el listener cuando el componente se desmonte
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
 
   const handleInstallClick = () => {
-    // Si el evento deferredPrompt está disponible, mostrar el prompt de instalación
     if (deferredPrompt) {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then((choiceResult) => {
@@ -34,37 +28,58 @@ const InstallPrompt = () => {
         } else {
           console.log('El usuario rechazó la instalación');
         }
-        // Limpiar el evento después de la interacción
         setDeferredPrompt(null);
-        setShowInstallModal(false); // Cerrar el modal
+        setShowInstallModal(false);
       });
     }
   };
 
   return (
-    showInstallModal && (
-      <div className="fixed inset-0 bg-black bg-opacity-10 flex justify-center items-center z-50">
-        <div className="bg-white p-6 rounded-lg text-center w-[90%]  md:w-[35%] ">
-          <img
-            src="/logo.png" // Ruta al logo de tu app
-            alt="Logo"
-            className="w-24 mx-auto mb-6"
-          />
-          <h2 className="text-2xl font-semibold mb-4"> ¡Descubre tu futuro al instante!</h2>
-          <p className="text-lg mb-6">
-         
-
-          Instala Sortis, tu app de tarot personalizada, y lleva las cartas en tu bolsillo. Accede a lecturas místicas, consejos sabios y más, todo al alcance de tu mano. ¡Hazla nativa en tu dispositivo y empieza a explorar tu destino ahora mismo!
-          </p>
-          <button
-            onClick={handleInstallClick}
-            className="bg-accent font-cinzel text-white py-2 px-6 rounded-lg text-lg cursor-pointer"
+    <AnimatePresence>
+      {showInstallModal && (
+        <motion.div
+          className="fixed inset-0 bg-transparent flex justify-center items-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-white p-6 rounded-2xl text-center w-[90%] md:w-[35%] shadow-lg relative"
+            initial={{ y: "-100vh", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "-100vh", opacity: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
           >
-            Instalar
-          </button>
-        </div>
-      </div>
-    )
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className="w-24 mx-auto mb-4 drop-shadow-lg"
+            />
+            <h2 className="text-2xl font-semibold mb-3 text-gray-800">
+              ¡Descubre tu futuro al instante!
+            </h2>
+            <p className="text-lg text-gray-600 mb-6">
+              Instala <span className="text-purple-600 font-bold">Sortis</span>, tu app de tarot personalizada, y lleva las cartas en tu bolsillo. 
+              Accede a lecturas místicas, consejos sabios y más. ¡Explora tu destino ahora mismo!
+            </p>
+          <div className='w-full flex gap-3 justify-center items-center'>
+          <button
+              onClick={handleInstallClick}
+              className="bg-gradient-to-r from-purple-600 to-indigo-500 text-white py-2 px-6 rounded-lg text-lg font-semibold shadow-md transition-transform transform hover:scale-105"
+            >
+              Instalar
+            </button>
+            <button
+              onClick={()=>setShowInstallModal(false)}
+              className="bg-transparent  text-gray-500 border  py-2 px-6 rounded-lg text-lg font-semibold shadow-md transition-transform transform hover:scale-105"
+            >
+           Cancelar
+            </button>
+          </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

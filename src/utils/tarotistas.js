@@ -13,7 +13,8 @@ const tarotistas = [
       "Recuperar la pareja",
       "Ritual para la abundancia",
       "Limpiezas energéticas"
-    ]
+    ],
+    img: "/danu.jpeg"
   },
   {
     name: "Dana Tarot",
@@ -29,7 +30,8 @@ const tarotistas = [
       "Recuperar la pareja",
       "Ritual para la abundancia",
       "Limpiezas energéticas"
-    ]
+    ],
+    img: "/brigid.jpeg"
   },
   {
     name: "Cristian Psíquico",
@@ -45,7 +47,8 @@ const tarotistas = [
       "Recuperar la pareja",
       "Ritual para la abundancia",
       "Limpiezas energéticas"
-    ]
+    ],
+    img: "/taranis.jpeg"
   }
 ];
 

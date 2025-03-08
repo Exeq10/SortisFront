@@ -1,13 +1,14 @@
 
 
 import { FaEnvelope, FaPhoneAlt } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 
 // eslint-disable-next-line react/prop-types
 function Tarotista({tarotista}) {
 
     // eslint-disable-next-line react/prop-types
-    const {ratings, name} = tarotista;
+    const {ratings, name,img} = tarotista;
 
     console.log(ratings);
 
@@ -44,7 +45,7 @@ function Tarotista({tarotista}) {
 
             <div className="w-full flex justify-center items-center">
                 <img 
-                    src="https://i.pravatar.cc/150" 
+                    src={img} 
                     alt="" 
                     className="w-[150px] h-[150px] rounded-full bg-gray-300"
                 />
@@ -52,7 +53,7 @@ function Tarotista({tarotista}) {
 
             <div className="flex flex-col justify-center items-center mt-10 px-4 pb-10 pt-4 bg-gradient-to-bl from-accent to-softBlue rounded-t-4xl">
                 <h2 className="font-uncial text-2xl text-white">{name} </h2>
-                <p className="font-cinzel text-lg text-white">Servicio / servicio</p>
+                <p className="font-cinzel text-lg text-white">Psiquico / Asesor</p>
 
                 {/* Rating stars */}
                 <div className="mt-4">
@@ -60,14 +61,14 @@ function Tarotista({tarotista}) {
                 </div>
 
                 <div className="w-full flex  justify-between px-4 mt-6">
-                <button className="px-6 py-2 border-2 border-accent font-cinzel rounded-md shadow-md bg-red-600 text-white flex items-center space-x-2 transition duration-300 hover:bg-green-900 hover:text-white">
+                <Link to={'/selectPlan'} className="px-6 py-2 border-2 border-accent font-cinzel rounded-md shadow-md bg-red-600 text-white flex items-center space-x-2 transition duration-300 hover:bg-green-900 hover:text-white">
                         <FaEnvelope className="w-5 h-5" />
                         <span>Mensaje</span>
-                    </button>
-                    <button className="px-6 py-2 border-2 border-accent font-cinzel rounded-md shadow-md bg-yellow-500 text-white flex items-center space-x-2 transition duration-300 hover:bg-green-900 hover:text-white">
+                    </Link>
+                    <Link to={'/selectPlan'} className="px-6 py-2 border-2 border-accent font-cinzel rounded-md shadow-md bg-yellow-500 text-white flex items-center space-x-2 transition duration-300 hover:bg-green-900 hover:text-white">
                         <FaPhoneAlt className="w-5 h-5" />
                         <span>Llamada</span>
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>

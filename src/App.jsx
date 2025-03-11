@@ -10,7 +10,7 @@ const Landing = lazy(() => import("./pages/User/Landing"));
 const Register = lazy(() => import("./pages/User/Register"));
 const Login = lazy(() => import("./pages/User/Login"));
 const DashboardUser = lazy(() => import("./pages/User/DasboardUser"));
-const Onboarding = lazy(() => import("./pages/User/Oboarding"));
+const Onboarding = lazy(() => import("./pages/User/Onboarding"));
 const SelectTarotista = lazy(() => import("./pages/User/SelectTarotista"));
 const PlanSelect = lazy(() => import("./pages/User/PlanSelect"));
 const Plan = lazy(() => import("./pages/User/Plan"));

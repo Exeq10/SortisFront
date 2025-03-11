@@ -14,7 +14,7 @@ const tarotistas = [
       "Ritual para la abundancia",
       "Limpiezas energéticas"
     ],
-    img: "/danu.jpeg"
+    img: "/madrecristian.jpg"
   },
   {
     name: "Dana Tarot",
@@ -31,7 +31,7 @@ const tarotistas = [
       "Ritual para la abundancia",
       "Limpiezas energéticas"
     ],
-    img: "/brigid.jpeg"
+    img: "/dana.jpg"
   },
   {
     name: "Cristian Psíquico",
@@ -48,7 +48,7 @@ const tarotistas = [
       "Ritual para la abundancia",
       "Limpiezas energéticas"
     ],
-    img: "/taranis.jpeg"
+    img: "/cristian.jpg"
   }
 ];
 

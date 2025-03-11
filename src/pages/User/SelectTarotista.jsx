@@ -2,7 +2,7 @@ import Tarotista from "../../components/Tarotista";
 import tarotistas from "../../utils/tarotistas";
 
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
+import {  Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -15,10 +15,10 @@ function SelectTarotista() {
       </h1>
 
       <Swiper
-        modules={[Navigation]}
+      
         spaceBetween={20}
         slidesPerView={1}
-        navigation
+     
         Pagination={{ clickable: true }}
         loop
         className="w-full max-w-5xl mt-6"

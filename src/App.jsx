@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Spinner from "./components/Spinner";
 import InstallPrompt from "./components/InstallPrompt";
 import ProtectedRoutes from "./components/ProtectedRoute";
+import ViewProfileTarotista from "./pages/User/ViewProfileTarotista";
 
 /* Sección usuarios */
 const Landing = lazy(() => import("./pages/User/Landing"));
@@ -13,6 +14,7 @@ const Onboarding = lazy(() => import("./pages/User/Oboarding"));
 const SelectTarotista = lazy(() => import("./pages/User/SelectTarotista"));
 const PlanSelect = lazy(() => import("./pages/User/PlanSelect"));
 const Plan = lazy(() => import("./pages/User/Plan"));
+const DashboardAll = lazy(() => import("./components/DashboardAll"));
 
 /* Sección tarotistas */
 const LoginTarot = lazy(() => import("./pages/Tarotista/LoginTarot"));
@@ -23,7 +25,7 @@ const router = createBrowserRouter([
   { path: "/register", element: <Register /> },
   { path: "/login", element: <Login /> },
 
-  /* Rutas protegidas (dentro de ProtectedRoutes) */
+  /* Rutas protegidas */
   {
     element: <ProtectedRoutes />,
     children: [
@@ -33,7 +35,19 @@ const router = createBrowserRouter([
       { path: "/selectPlan", element: <PlanSelect /> },
       { path: "/PlanPaid/:plan", element: <Plan /> },
       { path: "/loginTarot", element: <LoginTarot /> },
-      { path: "/dashboardUser", element: <DashboardUser /> },
+      { path:'/tarotistaProfile/:name', element: <ViewProfileTarotista /> }, 
+
+      /* Dashboard con rutas hijas */
+      {
+        path: "/dashboardUser",
+        element: <DashboardUser />,
+        children: [
+          { index: true, element: <DashboardAll /> }, // DashboardAll como vista inicial
+         
+        ],
+      },
+
+      
     ],
   },
 ]);

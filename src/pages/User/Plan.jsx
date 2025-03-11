@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import Goback from "../../components/Goback";
 
 function Plan() {
   const { plan } = useParams();
@@ -12,6 +13,8 @@ function Plan() {
       <div className="border-2 mt-8 border-accent rounded-md shadow-md font-cinzel px-4 py-4 uppercase bg-gradient-to-r from-accent to-highlight text-white ">
         {decodeURIComponent(plan)}
       </div>
+
+      <Goback/>
     </div>
   );
 }

@@ -29,10 +29,10 @@ function Tarotista({ tarotista }) {
     };
 
     return (
-        <div className=" w-auto mt-2  m-auto border-accent border-4 rounded-2xl shadow-md flex flex-col">
+        <div className=" w-[95%] mt-2  m-auto border-accent border-4 rounded-2xl shadow-md flex flex-col">
             <div className="flex justify-between py-4 px-4">
-                <Link to={`/tarotistaProfile/juan`} className=" flex  justify-center items-center h-8 border-2 rounded-xl border-gray-300 px-3 font-cinzel bg-green-700 text-white transition duration-300 hover:bg-highlight hover:text-white">
-                    Ver más
+                <Link to={`/tarotistaProfile/${name}`} className=" flex  justify-center items-center h-8 border-2 rounded-xl border-gray-300 px-3 font-cinzel bg-green-700 text-white transition duration-300 hover:bg-highlight hover:text-white">
+                   Ver perfil
                 </Link>
                 <img src="/logo.png" alt="logo app" className="w-20 h-30" />
             </div>
@@ -41,7 +41,7 @@ function Tarotista({ tarotista }) {
                 <img 
                     src={img} 
                     alt="" 
-                    className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-full bg-gray-300"
+                    className="w-[180px] h-[180px] md:w-[150px] md:h-[150px] rounded-full bg-gray-300"
                 />
             </div>
 

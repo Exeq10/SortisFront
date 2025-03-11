@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 import frasesTarot from "../../utils/phrases";
 import { IoMdMenu } from "react-icons/io";
@@ -16,7 +16,7 @@ const linksMenu = [
   },
   {
     label: "Perfil",
-    link: "/profile",
+    link: "profile",
   },
 
   { label: "Novedades", link: "/news" },
@@ -29,6 +29,13 @@ function DashboardUser() {
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
+
+  useEffect(() => {
+    
+
+    setMenuOpen(false)
+  }, [])
+  
 
   
   return (

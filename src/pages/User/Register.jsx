@@ -6,16 +6,16 @@ import { paisesHispanohablantes } from "../../utils/countries";
 import SelectSigno from "../../components/SelectSigno";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../../components/Spinner";
+import axios from "axios";
+
+import Api from "../../utils/API";
+
 
 function Register() {
+  const navigate = useNavigate();
 
-const navigate = useNavigate()
-
-
-/* SPINNER  */
-
-
-const [isLoading,setIsLoading] = useState(false)
+  /* SPINNER */
+  const [isLoading, setIsLoading] = useState(false);
   const [state, setState] = useState(false);
   const [formData, setFormData] = useState({
     nombre: "",
@@ -28,29 +28,15 @@ const [isLoading,setIsLoading] = useState(false)
 
   const validateInputs = () => {
     let errors = [];
+    const today = new Date();
+    const minDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    const selectedDate = new Date(formData.fechaNacimiento);
 
-
-     // Calcula la fecha mínima permitida (hace 18 años desde hoy)
-  const today = new Date();
-  const minDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-  const selectedDate = new Date(formData.fechaNacimiento);
-
-  if (!formData.nombre.trim()) {
-    errors.push("El nombre es obligatorio.");
-  }
-
-  if (!formData.fechaNacimiento) {
-    errors.push("La fecha de nacimiento es obligatoria.");
-  } else if (selectedDate > minDate) {
-    errors.push("Debes ser mayor de 18 años.");
-  }
-    
-    if (!formData.nombre.trim()) {
-      errors.push("El nombre es obligatorio.");
-    }
-
+    if (!formData.nombre.trim()) errors.push("El nombre es obligatorio.");
     if (!formData.fechaNacimiento) {
       errors.push("La fecha de nacimiento es obligatoria.");
+    } else if (selectedDate > minDate) {
+      errors.push("Debes ser mayor de 18 años.");
     }
 
     if (!formData.email.trim()) {
@@ -65,31 +51,41 @@ const [isLoading,setIsLoading] = useState(false)
       errors.push("La contraseña debe tener al menos 6 caracteres.");
     }
 
-    if (!formData.pais) {
-      errors.push("Debe seleccionar un país de residencia.");
-    }
-
-    if (!formData.terminos) {
-      errors.push("Debe aceptar los términos y condiciones.");
-    }
+    if (!formData.pais) errors.push("Debe seleccionar un país de residencia.");
+    if (!formData.terminos) errors.push("Debe aceptar los términos y condiciones.");
 
     return errors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errors = validateInputs();
     if (errors.length > 0) {
       errors.forEach((error) => toast.error(error));
       return;
     }
-    toast.success("Registro exitoso");
-    setIsLoading(true)
-    setTimeout(() => {
-      
-      setIsLoading(false)
-      navigate('/onboarding')
-    }, 10000);
+
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post(`${Api}auth/register`, {
+        name: formData.nombre,
+        email: formData.email,
+        password: formData.password,
+        role: "cliente",
+        sign: localStorage.getItem("Signo"),
+        birthdate: formData.fechaNacimiento,
+        image:"/avatar.png"
+      });
+
+      toast.success("Registro exitoso. Redirigiendo al login...");
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (error) {
+      console.error("Error al crear usuario:", error.response?.data );
+      toast.error(JSON.stringify(error.response?.data.error) || "Error al registrar usuario.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -114,15 +110,12 @@ const [isLoading,setIsLoading] = useState(false)
                   <div className="w-full flex flex-col items-start gap-3">
                     <label className="text-left text-white font-cinzel text-sm">Fecha de nacimiento</label>
                     <input
-  className="bg-white w-[80%] px-3 py-2 rounded-md"
-  type="date"
-  value={formData.fechaNacimiento}
-  onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.target.value })}
-  max={new Date(new Date().setFullYear(new Date().getFullYear() - 18))
-    .toISOString()
-    .split("T")[0]}
-/>
-
+                      className="bg-white w-[80%] px-3 py-2 rounded-md"
+                      type="date"
+                      value={formData.fechaNacimiento}
+                      onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.target.value })}
+                      max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split("T")[0]}
+                    />
                   </div>
                 </div>
                 <div className="w-full flex flex-col items-start gap-3">
@@ -167,18 +160,17 @@ const [isLoading,setIsLoading] = useState(false)
                   <p className="font-cinzel text-white text-sm">Acepto los términos y condiciones</p>
                 </div>
                 <button type="submit" className="rounded-md mt-6 mb-8 flex items-center justify-center font-cinzel px-6 py-3 w-[80%] bg-gradient-to-r from-primario to-[#323465] text-white">
-                  Continuar
+                  {isLoading ? <Spinner /> : "Continuar"}
                   <TiChevronRight className="ml-2" />
                 </button>
               </form>
             </div>
           </div>
 
-                      {isLoading && <Spinner/>}
-
+          {isLoading && <Spinner />}
         </section>
       ) : (
-        <SelectSigno setState={setState} state={state}  />
+        <SelectSigno setState={setState} state={state} />
       )}
     </>
   );

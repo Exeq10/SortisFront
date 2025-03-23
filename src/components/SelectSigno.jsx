@@ -27,7 +27,7 @@ function SelectSigno({setState}) {
 /* funcion que toma el valor de signo y autoriza el cambio de componente */
     const handleSing = (e) => {
 
-        console.log(e);
+      localStorage.setItem('Signo',e)
 
         setState(true)
         

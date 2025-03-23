@@ -8,8 +8,14 @@ import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import Api from "../../utils/API";
+/* Redux */
+import { useDispatch } from "react-redux";
+import { setUser } from "../../redux/userSlice"; 
+
 function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // Para despachar acciones de Redux
 
   // Estados para los inputs
   const [email, setEmail] = useState("");
@@ -41,9 +47,11 @@ function Login() {
     });
   };
 
-  // Simulación de login
-  const handleLogin = (e) => {
+  // Función para hacer la petición POST
+  const handleLogin = async (e) => {
     e.preventDefault();
+    console.log(password);
+    
 
     const errors = validateInputs();
     if (errors.length > 0) {
@@ -51,11 +59,29 @@ function Login() {
       return;
     }
 
-    if (email === "admin@correo.com" && password === "123456") {
-      toast.success("Inicio de sesión exitoso");
-      setTimeout(() => navigate("/dashboard"), 1500);
-    } else {
-      toast.error("Credenciales incorrectas");
+    try {
+      const response = await fetch(`${Api}auth/login`, { // Cambia esta URL por la del servidor
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+
+        console.log(response);
+        // Si la respuesta es exitosa, guardar los datos en el estado global
+        dispatch(setUser(data.user)); 
+        toast.success("Inicio de sesión exitoso");
+        setTimeout(() => navigate("/dashboardUser"), 1500);
+      } else {
+        toast.error(data.message || "Credenciales incorrectas");
+      }
+    } catch (error) {
+      toast.error("Hubo un error al intentar iniciar sesión");
     }
   };
 

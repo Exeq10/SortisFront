@@ -1,41 +1,33 @@
 import { Link } from "react-router-dom";
 import Goback from "../../components/Goback";
 
-
 function PlanSelect() {
-
-
-
   return (
     <div className="flex flex-col w-full md:w-[30%] m-auto justify-center items-center px-4">
-      <div className="w-full px-3 mt-4">
-      
-      </div>
-
       <h1 className="font-cinzel text-3xl mt-6 text-center max-w-[60%] text-accent">
         Seleccione su plan
       </h1>
 
       <div className="mt-10 flex flex-col gap-7">
         <Link
-          to={`/PlanPaid/${encodeURIComponent("Plan 15 minutos + 2 free / $34.99")}`}
+          to={`/PlanPaid/${encodeURIComponent("Plan 5 minutos + 2 free / $14.99")}`}
           className="border-2 border-accent rounded-md shadow-md font-cinzel px-4 py-4 uppercase hover:bg-gradient-to-r from-accent to-highlight hover:text-white duration-200"
         >
-          Plan 15 minutos + 2 free / $34.99
+          Plan 5 minutos + 2 free / $14.99
         </Link>
-        
+
         <Link
-          to={`/PlanPaid/${encodeURIComponent("Plan 20 minutos + 2 free / $54.99")}`}
-          className="border-2 border-accent rounded-md shadow-md font-cinzel px-4 py-4 uppercase hover:bg-gradient-to-r from-accent to-highlight hover:text-white duration-200"
-          >
-          Plan 20 minutos + 2 free / $54.99
-        </Link>
-        
-        <Link
-          to={`/PlanPaid/${encodeURIComponent("Plan 30 minutos + 2 free / $64.99")}`}
+          to={`/PlanPaid/${encodeURIComponent("Plan 15 minutos + 2 free / $58.99")}`}
           className="border-2 border-accent rounded-md shadow-md font-cinzel px-4 py-4 uppercase hover:bg-gradient-to-r from-accent to-highlight hover:text-white duration-200"
         >
-          Plan 30 minutos + 2 free / $64.99
+          Plan 15 minutos + 2 free / $58.99
+        </Link>
+
+        <Link
+          to={`/PlanPaid/${encodeURIComponent("Plan 30 minutos + 2 free / $89.99")}`}
+          className="border-2 border-accent rounded-md shadow-md font-cinzel px-4 py-4 uppercase hover:bg-gradient-to-r from-accent to-highlight hover:text-white duration-200"
+        >
+          Plan 30 minutos + 2 free / $89.99
         </Link>
 
         <p className="mt-5">
@@ -51,7 +43,8 @@ function PlanSelect() {
           <li>Salud</li>
           <li>Juegos de Azar</li>
         </ul>
-          <Goback/>
+
+        <Goback />
       </div>
     </div>
   );

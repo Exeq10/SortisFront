@@ -12,16 +12,22 @@ import { Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { useSelector, useDispatch } from "react-redux";
+
 
 import tarotistas from "../utils/tarotistas";
 import Tarotista from "./Tarotista";
 function DashboardAll() {
+
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
+  console.log(user.name);
   return (
     <>
    {/* Contenido principal */}
    <div className="flex w-full flex-col items-start px-4 mt-10">
    <h1 className="text-start font-cinzel text-3xl text-primario">
-     Bienvenido de nuevo
+     Bienvenido   {user.name || "Usuario"}
    </h1>
    <p className="text-md text-gray-600 mt-6">
      {obtenerFraseAleatoria("grupo1")}

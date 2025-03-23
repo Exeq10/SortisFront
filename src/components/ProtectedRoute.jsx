@@ -1,13 +1,19 @@
 import { Navigate, Outlet } from "react-router-dom";
+import {useSelector} from 'react-redux'
 
 const ProtectedRoutes = () => {
-  const auth = true // Reemplaza con tu lógica de autenticación
+
+  const user = useSelector((state) => state.user);
+
+
+
+  const auth = user.token || false
 
   if (!auth) {
     return <Navigate to="/login" />;
   }
 
-  return <Outlet />; // Renderiza las rutas protegidas definidas en `children`
+  return <Outlet />;
 };
 
 export default ProtectedRoutes;

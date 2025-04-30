@@ -4,10 +4,10 @@ import frasesTarot from "../../utils/phrases";
 import { IoMdMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 
+import { useNavigate } from "react-router-dom";
 
 import obtenerFraseAleatoria from "../../hooks/obtenerFrase";
-
-
+import { toast } from "react-toastify";
 
 const linksMenu = [
   {
@@ -30,18 +30,16 @@ const linksMenu = [
 function Dashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const navigate = useNavigate();
+
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
 
   useEffect(() => {
-    
+    setMenuOpen(false);
+  }, []);
 
-    setMenuOpen(false)
-  }, [])
-  
-
-  
   return (
     <section className="relative flex flex-col w-full md:w-[30%] m-auto justify-center items-center">
       {/* Menú desplegable */}
@@ -57,6 +55,7 @@ function Dashboard() {
                 to={link.link}
                 key={key}
                 className="font-cinzel rounded-md  text-white  duration-200 hover:scale-105  "
+                onClick={() => {setMenuOpen(false)}}
               >
                 {" "}
                 {link.label}{" "}
@@ -65,10 +64,14 @@ function Dashboard() {
           })}
         </nav>
 
-      
-
         <div className="flex justify-center w-full">
-          <button className=" w-[90%] font-cinzel border-2 border-white px-5 py-1 rounded-md  mt-64  hover:bg-highlight hover:text-white duration-200 bg-primario text-white ">
+          <button
+            onClick={() => {
+              localStorage.removeItem("user");
+              navigate("/");
+            }}
+            className=" w-[90%] font-cinzel border-2 border-white px-5 py-1 rounded-md  mt-64  hover:bg-highlight hover:text-white duration-200 bg-primario text-white "
+          >
             Salir
           </button>
         </div>
@@ -84,9 +87,7 @@ function Dashboard() {
         </button>
       </div>
 
-
-<Outlet/>
-      
+      <Outlet />
     </section>
   );
 }

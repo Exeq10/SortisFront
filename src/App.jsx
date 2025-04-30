@@ -1,14 +1,24 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Spinner from "./components/Spinner";
-import InstallPrompt from "./components/InstallPrompt";
+import InstallPrompt from "./components/InstallPrompt.jsx";
 import ProtectedRoutes from "./components/ProtectedRoute";
+import ProtectedTarotRoutes from "./components/ProtectedTarotRoutes.jsx";
 import ViewProfileTarotista from "./pages/User/ViewProfileTarotista";
 import Dashboard from "./pages/Tarotista/Dashboard.jsx";
 import UserProfile from "./pages/Tarotista/UserProfile.jsx";
 import ChatList from "./pages/Tarotista/ChatList.jsx";
 import Statics from "./pages/Tarotista/Statics.jsx";
-
+import ErrorPage from "./pages/ErrorPage"; // Importamos la ErrorPage
+import PagoExitoso from "./pages/User/PagoExitoso.jsx";
+import RecoverPassword from "./pages/User/RecoverPassword.jsx";
+import VerifyCode from "./pages/User/VerifyCode.jsx";
+import NewPassword from "./pages/User/NewPassword.jsx";
+import TermsAndConditions from "./pages/User/TermsAndConditions.jsx";
+import ChatComponent from "./pages/User/ChatComponent.jsx";
+import PostDetail from "./components/PostDetail.jsx";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import BlogPosts from "./pages/User/BlogPost.jsx";
 
 /* Sección usuarios */
 const Landing = lazy(() => import("./pages/User/Landing"));
@@ -21,13 +31,12 @@ const PlanSelect = lazy(() => import("./pages/User/PlanSelect"));
 const Plan = lazy(() => import("./pages/User/Plan"));
 const DashboardAll = lazy(() => import("./components/DashboardAll"));
 
-
 /* Sección tarotistas */
 const LoginTarot = lazy(() => import("./pages/Tarotista/LoginTarot"));
 const DashboardAllTarot = lazy(() => import("./pages/Tarotista/DashboardAllTarot.jsx"));
-const Profile = lazy (() =>import  ("./pages/User/Profile.jsx") )
-const Entrada = lazy(()=> import ("./pages/Tarotista/Entrada.jsx"))
-
+const Profile = lazy(() => import("./pages/User/Profile.jsx"));
+const Entrada = lazy(() => import("./pages/Tarotista/Entrada.jsx"));
+const ChatComponentTarotista = lazy(() => import("./pages/Tarotista/TarotistaChatComponent.jsx"));
 
 const router = createBrowserRouter([
   /* Rutas públicas */
@@ -35,53 +44,72 @@ const router = createBrowserRouter([
   { path: "/register", element: <Register /> },
   { path: "/login", element: <Login /> },
   { path: "/loginTarot", element: <LoginTarot /> },
+  { path: "/recoveryPass", element: <RecoverPassword /> },
+  { path: "/verify-code", element: <VerifyCode /> },
+  { path: "/new-password", element: <NewPassword /> },
+  { path: "/terms&conditions", element: <TermsAndConditions /> },
 
-  /* Rutas protegidas */
+  /* Rutas protegidas para USUARIOS */
   {
     element: <ProtectedRoutes />,
     children: [
-      { path: "/menu", element: <DashboardUser /> },
+     
       { path: "/onboarding", element: <Onboarding /> },
       { path: "/selectTarot", element: <SelectTarotista /> },
       { path: "/selectPlan", element: <PlanSelect /> },
       { path: "/PlanPaid/:plan", element: <Plan /> },
-   
-      { path:'/tarotistaProfile/:nombre', element: <ViewProfileTarotista /> }, 
+      { path: "/pago-exitoso", element: <PagoExitoso /> },
+      { path: "/chat", element: <ChatComponent/> },
+      { path:"/post/:id", element:<PostDetail />},
 
-      /* Dashboard con rutas hijas */
+      { path: "/tarotistaProfile/:nombre", element: <ViewProfileTarotista /> },
+
       {
         path: "/dashboardUser",
         element: <DashboardUser />,
         children: [
-          { index: true, element: <DashboardAll /> }, // DashboardAll como vista inicial
-          {path:'profile', element: <Profile/>},
+          { index: true, element: <DashboardAll /> },
+          { path: "profile", element: <Profile /> },
+          {path: 'blog',element: <BlogPosts/> }
         ],
       },
-      /* Dashboard con rutas hijas */
+    ],
+  },
+
+  /* Rutas protegidas para TAROTISTAS */
+  {
+    element: <ProtectedTarotRoutes />,
+    children: [
       {
         path: "/dashboard",
         element: <Dashboard />,
         children: [
-          { index: true, element: <DashboardAllTarot/>}, // DashboardAll como vista inicial
-          {path:'profileTarot', element: <UserProfile/>},
-          {path:'chats', element: <ChatList/>},
-          {path:'create', element: <Entrada/>},
-          {path:'statics', element: <Statics/>},
+          { index: true, element: <DashboardAllTarot /> },
+          { path: "profileTarot", element: <UserProfile /> },
+          { path: "chats", element: <ChatList /> },
+          { path: "create", element: <Entrada /> },
+          { path: "statics", element: <Statics /> },
+          { path: "chat/:conversationSid", element: <ChatComponentTarotista /> }, 
+
         ],
       },
-      
-      /* {path:'/entries', element: <Entrada/>} */
-      
     ],
   },
+
+  /* Página de error para rutas no encontradas */
+  { path: "*", element: <ErrorPage /> },
 ]);
 
 function App() {
   return (
+
+    <PayPalScriptProvider options={{ "client-id": "AeLp0pscZ92wImVEIauH55-QoVaIDLByAW51YziCIUMweUuQAUfpxW15pnnVjxJoaEcqPSL-gedT-lUi", currency: "USD" }}>
+
     <Suspense fallback={<Spinner />}>
       <RouterProvider router={router} />
       <InstallPrompt />
     </Suspense>
+    </PayPalScriptProvider>
   );
 }
 

@@ -12,6 +12,8 @@ const InstallPrompt = () => {
       setShowInstallModal(true);
     };
 
+    
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     return () => {

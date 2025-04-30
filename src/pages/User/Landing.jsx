@@ -31,6 +31,9 @@ function Landing() {
       <p className="text-center text-gray-400 text-xs w-full bottom-4 font-light mt-16 relative sm:text-sm sm:w-auto z-10">
         SORTIS es una app web que ofrece como servicio el contacto con tarotistas
       </p>
+      
+
+      <Link to={'/terms&conditions'} className="absolute bottom-4 right-4 text-gray-400 text-xs font-light hover:text-white transition duration-300 z-10"> Términos y condiciones </Link>
     </section>
   );
 }

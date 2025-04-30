@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { paisesHispanohablantes } from "../../utils/countries";
 import SelectSigno from "../../components/SelectSigno";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Spinner from "../../components/Spinner";
 import axios from "axios";
 
@@ -78,7 +78,7 @@ function Register() {
         image:"/avatar.png"
       });
 
-      toast.success("Registro exitoso. Redirigiendo al login...");
+      toast.success("Registro exitoso. Felicidades tienes recompensa...");
       setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
       console.error("Error al crear usuario:", error.response?.data );
@@ -91,6 +91,8 @@ function Register() {
   return (
     <>
       <ToastContainer />
+
+      
       {state ? (
         <section className="w-full h-screen flex justify-center items-center flex-col">
           <div className="mb-6 px-3 rounded-br-[45%] w-screen sm:w-3/4 lg:w-2/4 bg-gradient-to-r from-secundario to-highlight h-full flex flex-col justify-start items-center">
@@ -157,7 +159,7 @@ function Register() {
                     checked={formData.terminos}
                     onChange={(e) => setFormData({ ...formData, terminos: e.target.checked })}
                   />
-                  <p className="font-cinzel text-white text-sm">Acepto los términos y condiciones</p>
+                  <Link to={'/terms&conditions'} className="font-cinzel text-white text-sm">Acepto los términos y condiciones</Link>
                 </div>
                 <button type="submit" className="rounded-md mt-6 mb-8 flex items-center justify-center font-cinzel px-6 py-3 w-[80%] bg-gradient-to-r from-primario to-[#323465] text-white">
                   {isLoading ? <Spinner /> : "Continuar"}

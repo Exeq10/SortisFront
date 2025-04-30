@@ -2,31 +2,37 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { TiChevronRight } from "react-icons/ti";
 import { RiExchangeLine } from "react-icons/ri";
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 
 /* Alertas */
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-function Login() {
-  const navigate = useNavigate();
+/* API y Redux */
+import Api from "../../utils/API";
+import { useDispatch } from "react-redux";
+import { setTarotista } from "../../redux/tarotistaSlice";
 
-  // Estados para los inputs
+function LoginTarot() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Función de validación de los inputs
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
   const validateInputs = () => {
     let errors = [];
 
-    // Validar email
     if (!email.trim()) {
       errors.push("El email es obligatorio.");
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       errors.push("El email no es válido.");
     }
 
-    // Validar contraseña
     if (!password.trim()) {
       errors.push("La contraseña es obligatoria.");
     } else if (password.length < 6) {
@@ -36,15 +42,11 @@ function Login() {
     return errors;
   };
 
-  // Función para mostrar los errores en los toasts
   const showErrorsInToast = (errors) => {
-    errors.forEach((error) => {
-      toast.error(error);
-    });
+    errors.forEach((error) => toast.error(error));
   };
 
-  // Simulación de login
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     const errors = validateInputs();
@@ -53,12 +55,31 @@ function Login() {
       return;
     }
 
-    // Simulación de autenticación (reemplaza con tu API)
-    if (email === "admin@correo.com" && password === "123456") {
-      toast.success("Inicio de sesión exitoso");
-      setTimeout(() => navigate("/dashboard"), 1500); // Redirigir tras éxito
-    } else {
-      toast.error("Credenciales incorrectas");
+    try {
+      const response = await fetch(`${Api}auth/login-tarotista`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+
+     
+        
+        localStorage.setItem('Tarotista',JSON.stringify(data.user))
+        dispatch(setTarotista(data.user));
+
+        toast.success("Inicio de sesión exitoso");
+        navigate('/dashboard')
+
+      
+      } else {
+        toast.error(data.message || "Credenciales incorrectas");
+      }
+    } catch (error) {
+      toast.error("Hubo un error al intentar iniciar sesión");
     }
   };
 
@@ -80,7 +101,6 @@ function Login() {
         <img src="/logo.webp" alt="Logo" className="w-40 sm:w-56 lg:w-64" />
 
         <motion.div
-          id="inputs-forms"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.6 }}
@@ -88,11 +108,12 @@ function Login() {
         >
           <form className="w-full" onSubmit={handleLogin}>
             <div className="w-full flex flex-col items-center gap-3">
-              <label htmlFor="email" className="text-left text-white font-cinzel">
+              <label htmlFor="email" className="text-white font-cinzel">
                 Ingrese su email
               </label>
               <input
-                className="bg-white w-[80%] sm:w-[80%] lg:w-[90%] px-3 py-2 rounded-md"
+                id="email"
+                className="bg-white w-[80%] px-3 py-2 rounded-md"
                 type="email"
                 placeholder="correo@correo"
                 value={email}
@@ -100,33 +121,53 @@ function Login() {
               />
             </div>
 
-            <div className="w-full flex flex-col items-center gap-3 mt-5">
-              <label htmlFor="password" className="text-left text-white font-cinzel">
+            <div className="w-full flex flex-col items-center gap-3 mt-6">
+              <label htmlFor="password" className="text-white font-cinzel">
                 Ingrese su contraseña
               </label>
-              <input
-                className="bg-white w-[80%] sm:w-[80%] lg:w-[90%] px-3 py-2 rounded-md"
-                type="password"
-                placeholder="*********"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="rounded-md mt-10 flex items-center justify-center font-cinzel px-6 py-3 w-[80%] sm:w-[80%] lg:w-[60%] bg-gradient-to-r from-gray to-gray-400 text-white"
-              >
-                Iniciar sesión
-                <TiChevronRight className="ml-2" />
-              </motion.button>
+              <div className="relative w-[80%]">
+                <input
+                  id="password"
+                  className="bg-white w-full px-3 py-2 rounded-md"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="*********"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <div
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                >
+                  {showPassword ? (
+                    <AiFillEyeInvisible className="text-gray-500" />
+                  ) : (
+                    <AiFillEye className="text-gray-500" />
+                  )}
+                </div>
+              </div>
+              <Link to={"/recoveryPass"} className="text-white underline mt-2">
+                ¿Has olvidado tu contraseña?
+              </Link>
             </div>
+
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="rounded-md mt-10 flex items-center justify-center font-cinzel px-6 py-3 w-[80%] bg-gradient-to-r from-[#323465] to-primario text-white"
+            >
+              Iniciar sesión
+              <TiChevronRight className="ml-2" />
+            </motion.button>
           </form>
         </motion.div>
       </motion.div>
 
-      <div className="w-full flex px-6 justify-end">
-        <Link to={"/login"} className="px-4 py-2 bg-primario rounded-md text-white flex items-center justify-center">
+      <div className="w-full flex justify-end px-6 mt-4">
+        <Link
+          to={"/login"}
+          className="px-4 py-2 bg-highlight rounded-md text-white flex items-center justify-center"
+        >
           Usuarios <RiExchangeLine />
         </Link>
       </div>
@@ -134,4 +175,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default LoginTarot;

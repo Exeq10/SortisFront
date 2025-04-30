@@ -5,6 +5,9 @@ import { Link } from "react-router-dom";
 function ViewsCards() {
   const [cards, setCards] = useState([]);
 
+
+  
+
   const cardSelect = () => {
     const selectedCards = new Set();
 
@@ -56,10 +59,13 @@ function ViewsCards() {
           ))}
         </div>
 
-         <div className="w-full flex  justify-center mt-7 ">
+         <div className="w-full flex flex-col gap-3 items-center justify-center mt-7 ">
 
-         <Link to={'/selectTarot'}   className="px-4 min-w-[50%] py-3 bg-gradient-to-r from-purple-600 to-indigo-500 hover:scale-105 hover:shadow-lg transition-all text-white font-cinzel rounded-md shadow-2xl mb-3">
+         <Link to={'/selectTarot'}   className="px-4 w-[90%] text-center py-3 bg-gradient-to-r from-purple-600 to-indigo-500 hover:scale-105 hover:shadow-lg transition-all text-white font-cinzel rounded-md shadow-2xl mb-3">
          ✨ Descubre tu futuro
+</Link>
+         <Link to={'/dashboardUser'}   className="px-4 w-[90%] text-center py-3 bg-gradient-to-r from-gray-800 to-indigo-500 hover:scale-105 hover:shadow-lg transition-all text-white font-cinzel rounded-md shadow-2xl mb-3">
+         Ir al Inicio
 </Link>
 
          </div>

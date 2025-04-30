@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
+  _id:"",
   name: "",
   email: "",
   password: "",
@@ -11,6 +12,7 @@ const initialState = {
   sign: "",
   availability: [],
   ratings: [],
+  isFirstLogin: true,
 };
 
 const userSlice = createSlice({
@@ -24,7 +26,7 @@ const userSlice = createSlice({
       return { ...state, ...action.payload };
     },
     resetUser: () => {
-      localStorage.removeItem("user"); // Borrar de localStorage
+      localStorage.removeItem("user"); 
       return initialState;
     },
   },

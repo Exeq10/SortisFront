@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import frasesTarot from "../../utils/phrases";
 import { IoMdMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
-
-
+import { useDispatch, useSelector } from "react-redux";
 import obtenerFraseAleatoria from "../../hooks/obtenerFrase";
-
-
+import Api from "../../utils/API";
+import { setTarotistas } from "../../redux/tarotistasSlice";
+import { toast } from "react-toastify";
 
 const linksMenu = [
   {
@@ -19,25 +19,24 @@ const linksMenu = [
     link: "profile",
   },
 
-  { label: "Novedades", link: "/news" },
+  { label: "Novedades", link: "blog" },
   { label: "Favoritos (Proximamente)", link: "/favs" },
 ];
 
 function DashboardUser() {
+  const dispatch = useDispatch();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
 
   useEffect(() => {
-    
+    setMenuOpen(false);
+  }, []);
 
-    setMenuOpen(false)
-  }, [])
-  
-
-  
   return (
     <section className="relative flex flex-col w-full md:w-[30%] m-auto justify-center items-center">
       {/* Menú desplegable */}
@@ -49,13 +48,14 @@ function DashboardUser() {
         <nav className="mt-10 flex flex-col items-start pl-6 space-y-4">
           {linksMenu.map((link, key) => {
             return (
-              <Link
+              <Link  onClick={() => {setMenuOpen(false)}}
                 to={link.link}
                 key={key}
                 className="font-cinzel rounded-md  text-primario  duration-200 hover:scale-105  "
               >
                 {" "}
                 {link.label}{" "}
+                
               </Link>
             );
           })}
@@ -74,7 +74,14 @@ function DashboardUser() {
         </div>
 
         <div className="flex justify-center w-full">
-          <button className=" w-[90%] font-cinzel border-2 border-white px-5 py-1 rounded-md  mt-64  hover:bg-highlight hover:text-white duration-200 bg-primario text-white ">
+          <button
+            onClick={() => {
+              localStorage.removeItem("user");
+
+              navigate("/");
+            }}
+            className=" hover:cursor-auto w-[90%] font-cinzel border-2 border-white px-5 py-1 rounded-md  mt-64  hover:bg-highlight hover:text-white duration-200 bg-primario text-white "
+          >
             Salir
           </button>
         </div>
@@ -90,9 +97,7 @@ function DashboardUser() {
         </button>
       </div>
 
-
-<Outlet/>
-      
+      <Outlet />
     </section>
   );
 }

@@ -1,7 +1,8 @@
-import  { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Goback from "../../components/Goback";
+import Api from "../../utils/API";
 
 function Plan() {
   const { plan } = useParams();
@@ -10,8 +11,8 @@ function Plan() {
   const [sdkReady, setSdkReady] = useState(false);
 
   const user = useSelector((state) => state.user);
+  const navigate = useNavigate();
 
-  // Establecer el monto según el plan seleccionado
   useEffect(() => {
     const planAmounts = {
       "Plan 5 minutos + 2 free / $14.99": 14.99,
@@ -21,83 +22,108 @@ function Plan() {
     setAmount(planAmounts[decodeURIComponent(plan)] || 0);
   }, [plan]);
 
-  // Cargar el SDK de PayPal
   useEffect(() => {
     const loadPayPalScript = () => {
-      if (!window.paypal) {
-        const script = document.createElement("script");
-        script.src = `https://www.paypal.com/sdk/js?client-id=AeLp0pscZ92wImVEIauH55-QoVaIDLByAW51YziCIUMweUuQAUfpxW15pnnVjxJoaEcqPSL-gedT-lUi&currency=USD&intent=capture`;
-        script.type = "text/javascript";
-        script.async = true;
-        script.onload = () => setSdkReady(true);
-        document.body.appendChild(script);
-      } else {
+      if (window.paypal) {
         setSdkReady(true);
+        return;
       }
+
+      const script = document.createElement("script");
+      script.src =
+        "https://www.paypal.com/sdk/js?client-id=AeLp0pscZ92wImVEIauH55-QoVaIDLByAW51YziCIUMweUuQAUfpxW15pnnVjxJoaEcqPSL-gedT-lUi&currency=USD&intent=capture";
+      script.async = true;
+      script.onload = () => setSdkReady(true);
+      script.onerror = () => setError("Error al cargar el SDK de PayPal.");
+      document.body.appendChild(script);
     };
 
     loadPayPalScript();
   }, []);
 
-  // Función para crear la orden en PayPal
   useEffect(() => {
-    if (!sdkReady || !window.paypal || !amount || !user?.token) {
-      return;  // Esperar hasta que el SDK esté listo, haya un monto y el usuario esté autenticado
-    }
+    if (!sdkReady || !window.paypal || !amount || !user?.token) return;
 
-    window.paypal
-      .Buttons({
-        async createOrder(data, actions) {
+    if (!document.getElementById("paypal-button-container").childNodes.length) {
+      window.paypal.Buttons({
+        createOrder: async () => {
           try {
-            // Crear la orden en el backend
-            const response = await fetch("/api/orders", {
+            const cart = {
+              email: user?.email,
+              totalAmount: amount,
+              items: [
+                {
+                  name: decodeURIComponent(plan),
+                  price: amount,
+                  quantity: 1,
+                  description: "Suscripción de Plan",
+                  sku: `PLAN-${amount}`,
+                },
+              ],
+              tarotista: JSON.parse(localStorage.getItem("tarotistaSeleccionado")),
+              user: user?._id || user?.id,
+            };
+
+            const response = await fetch(`${Api}payments/orders`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${user.token}`,
               },
-              body: JSON.stringify({ amount }),
+              body: JSON.stringify({ cart }),
             });
 
             const orderData = await response.json();
-            if (orderData.id) {
-              return orderData.id;
-            } else {
-              throw new Error(orderData?.message || "Error al crear la orden");
-            }
+            console.log("Orden creada:", orderData);
+
+            if (orderData?.orderID) return orderData.orderID;
+            throw new Error(orderData?.message || "Error al crear la orden");
           } catch (error) {
             setError(error.message);
             throw error;
           }
         },
 
-        async onApprove(data, actions) {
+        onApprove: async (data) => {
           try {
-            const response = await fetch(`/api/orders/${data.orderID}/capture`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${user.token}`,
-              },
-            });
+            console.log("Pago aprobado, procesando captura...");
+            const response = await fetch(
+              `${Api}payments/orders/${data.orderID}/capture`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${user.token}`,
+                },
+              }
+            );
 
             const orderData = await response.json();
-            if (orderData?.status === "COMPLETED") {
-              alert(`Pago exitoso. ID: ${orderData.id}`);
+            console.log("Resultado de captura:", orderData);
+
+            if (orderData?.payment?.transactionID) {
+              alert(
+                `Pago exitoso. ID de transacción: ${orderData.payment.transactionID}`
+              );
+              navigate("/pago-exitoso", { state: { orderData } });
             } else {
-              throw new Error("Error al capturar el pago");
+              throw new Error(
+                orderData?.message || "Error al capturar el pago o faltan datos."
+              );
             }
           } catch (error) {
             setError(error.message);
+            alert(`Error en la captura del pago: ${error.message}`);
           }
         },
 
-        onError(err) {
-          setError(err.message);
+        onError: (err) => {
+          console.error("Error en PayPal:", err);
+          setError("Ocurrió un error al procesar el pago.");
         },
-      })
-      .render("#paypal-button-container");
-  }, [sdkReady, amount, user?.token]);
+      }).render("#paypal-button-container");
+    }
+  }, [sdkReady, amount, user?.token, plan, user?.email, navigate]);
 
   return (
     <div className="flex flex-col justify-center w-full items-center min-h-screen px-2 py-6">
@@ -110,15 +136,17 @@ function Plan() {
         </div>
         <div className="text-center mt-8">
           <p className="text-gray-700 text-lg font-cinzel mb-4">
-            El monto a pagar es: <span className="text-accent font-bold">${amount}</span>
+            El monto a pagar es:{" "}
+            <span className="text-accent font-bold">${amount}</span>
           </p>
         </div>
-        {error && <p className="text-red-500 mt-4">Error: {error}</p>}
+
         {sdkReady ? (
           <div id="paypal-button-container" className="mt-6"></div>
         ) : (
           <p>Cargando PayPal...</p>
         )}
+        {error && <p className="text-red-500 mt-4">{error}</p>}
         <div className="flex justify-center w-full mt-6">
           <Goback />
         </div>

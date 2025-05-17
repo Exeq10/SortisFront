@@ -1,4 +1,4 @@
-const Api = "http://localhost:3000/api/";
+const Api = "https://sortisbackend.onrender.com/api/ ";
 
 
 /* https://sortisbackend.onrender.com/api/ */

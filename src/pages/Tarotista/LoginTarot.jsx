@@ -5,6 +5,10 @@ import { RiExchangeLine } from "react-icons/ri";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 
+/* suscripcion a notificaciones  */
+
+
+
 /* Alertas */
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -23,6 +27,13 @@ function LoginTarot() {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
+  const [isCliked, setIsCliked] = useState(false);
+  const handleClick = () => { 
+
+    setIsCliked(!isCliked);
+    }
+
 
   const validateInputs = () => {
     let errors = [];
@@ -48,6 +59,7 @@ function LoginTarot() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsCliked(true); // Bloquea y muestra "Iniciando sesión..."
 
     const errors = validateInputs();
     if (errors.length > 0) {
@@ -69,6 +81,7 @@ function LoginTarot() {
      
         
         localStorage.setItem('Tarotista',JSON.stringify(data.user))
+       
         dispatch(setTarotista(data.user));
 
         toast.success("Inicio de sesión exitoso");
@@ -77,6 +90,7 @@ function LoginTarot() {
       
       } else {
         toast.error(data.message || "Credenciales incorrectas");
+        setIsCliked(false); // Bloquea y muestra "Iniciando sesión..."
       }
     } catch (error) {
       toast.error("Hubo un error al intentar iniciar sesión");
@@ -148,17 +162,22 @@ function LoginTarot() {
               <Link to={"/recoveryPass"} className="text-white underline mt-2">
                 ¿Has olvidado tu contraseña?
               </Link>
+
+              <motion.button
+  type="submit"
+  whileHover={isCliked ? {} : { scale: 1.1 }} 
+  whileTap={{ scale: 0.95 }}
+  disabled={isCliked}
+  className={`rounded-md mt-10 flex items-center justify-center font-cinzel px-6 py-3 w-[90%] sm:w-[80%] lg:w-[60%]
+    bg-gradient-to-r from-primario to-[#323465] text-white transition-all duration-300
+    ${isCliked ? "animate-pulse cursor-not-allowed" : "hover:scale-110"}`}
+>
+  {isCliked ? "Iniciando sesión..." : "Iniciar sesión"}
+  <TiChevronRight className="ml-2" />
+</motion.button>
             </div>
 
-            <motion.button
-              type="submit"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="rounded-md mt-10 flex items-center justify-center font-cinzel px-6 py-3 w-[80%] bg-gradient-to-r from-[#323465] to-primario text-white"
-            >
-              Iniciar sesión
-              <TiChevronRight className="ml-2" />
-            </motion.button>
+          
           </form>
         </motion.div>
       </motion.div>

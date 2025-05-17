@@ -13,7 +13,7 @@ const ServiceCard = ({ service }) => {
       animate={{ opacity: 1, y: 0 }}
       className="bg-white shadow-xl flex flex-col justify-center items-center rounded-2xl p-6 mb-4 border hover:shadow-2xl transition-all duration-300"
     >
-      <h3 className="text-2xl font-semibold text-primario mb-2">{service.name}</h3>
+      <h3 className="text-lg text-center font-semibold text-primario mb-2">{service.name}</h3>
       <p className="text-gray-600 mb-4">
         Precio: <span className="text-accent font-bold">${service.price}</span>
       </p>

@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, Outlet } from "react-router-dom";
-import frasesTarot from "../../utils/phrases";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { IoMdMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
-
-import { useNavigate } from "react-router-dom";
-
-import obtenerFraseAleatoria from "../../hooks/obtenerFrase";
-import { toast } from "react-toastify";
 
 const linksMenu = [
   {
@@ -22,14 +16,13 @@ const linksMenu = [
     label: "Chats",
     link: "chats",
   },
-
   { label: "Entradas", link: "create" },
-  { label: "Estadisticas ", link: "statics" },
+  { label: "Estadisticas", link: "statics" },
 ];
 
 function Dashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   const toggleMenu = () => {
@@ -38,39 +31,53 @@ function Dashboard() {
 
   useEffect(() => {
     setMenuOpen(false);
+    const storedUser = localStorage.getItem("tarotista");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
   }, []);
 
   return (
     <section className="relative flex flex-col w-full md:w-[30%] m-auto justify-center items-center">
       {/* Menú desplegable */}
       <div
-        className={`fixed top-0 left-0 h-full w-[70%] bg-gradient-to-b from-softBlue to-accent    shadow-lg transform ${
+        className={`fixed top-0 left-0 h-full w-[70%] bg-gradient-to-b from-softBlue to-accent shadow-lg transform ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-300 z-50`}
       >
-        <nav className="mt-10 flex flex-col items-start pl-6 space-y-4">
-          {linksMenu.map((link, key) => {
-            return (
+        <div className="mt-10 pl-6">
+          {user && (
+            <div className="mb-6">
+              {/* Si tenés imagen de perfil */}
+              { <img src={user.image} alt="Perfil" className="w-16 h-16 rounded-full mb-2" /> }
+              <h2 className="text-white text-md font-bold font-cinzel">
+                ¡Hola, {user.name}!
+              </h2>
+            </div>
+          )}
+
+          <nav className="flex flex-col items-start space-y-4">
+            {linksMenu.map((link, key) => (
               <Link
                 to={link.link}
                 key={key}
-                className="font-cinzel rounded-md  text-white  duration-200 hover:scale-105  "
-                onClick={() => {setMenuOpen(false)}}
+                className="font-cinzel rounded-md text-white duration-200 hover:scale-105"
+                onClick={() => setMenuOpen(false)}
               >
-                {" "}
-                {link.label}{" "}
+                {link.label}
               </Link>
-            );
-          })}
-        </nav>
+            ))}
+          </nav>
+        </div>
 
         <div className="flex justify-center w-full">
           <button
             onClick={() => {
-              localStorage.removeItem("user");
+              localStorage.clear();
+              setUser(null);
               navigate("/");
             }}
-            className=" w-[90%] font-cinzel border-2 border-white px-5 py-1 rounded-md  mt-64  hover:bg-highlight hover:text-white duration-200 bg-primario text-white "
+            className="w-[90%] font-cinzel border-2 border-white px-5 py-1 rounded-md mt-64 hover:bg-highlight hover:text-white duration-200 bg-primario text-white"
           >
             Salir
           </button>

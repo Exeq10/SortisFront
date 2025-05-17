@@ -1,34 +1,52 @@
 import { useEffect, useState, useRef } from 'react';
 import { initializeChatClient } from '../../utils/chatService';
 import Api from '../../utils/API';
+import { toast, ToastContainer } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
 const ChatComponent = () => {
-  const identity = 'user123'; // Cambiar por el usuario autenticado
-
+  const user = JSON.parse(localStorage.getItem('user'));
+  const identity = user?.name || 'desconocido';
   const [token, setToken] = useState(null);
   const [conversationSid, setConversationSid] = useState(null);
   const [chatClient, setChatClient] = useState(null);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-
+  const [friendlyName, setFriendlyName] = useState('');
+  const [timeLeft, setTimeLeft] = useState(localStorage.getItem('chatDuracionPlan')); // 5 minutos en segundos
+  const [chatActive, setChatActive] = useState(true);
+  const oneMinuteWarned = useRef(false);
   const messagesEndRef = useRef(null);
 
-  // Crear o recuperar la conversación y token
+  // Verifica si ya se finalizó una sesión previa
   useEffect(() => {
+    const finalizado = localStorage.getItem('chatFinalizado') === 'true';
+    if (finalizado) {
+      setTimeLeft(0);
+      setChatActive(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const tarotistaIdentity = JSON.parse(localStorage.getItem('tarotistaSeleccionado'))?._id || 'desconocido';
+    const uniqueFriendlyName = [identity, tarotistaIdentity, Date.now()].join('_');
+    setFriendlyName(uniqueFriendlyName);
+
+    // Si se inicia un nuevo chat, limpiamos el estado anterior
+    localStorage.removeItem('chatFinalizado');
+
     const setupConversation = async () => {
       try {
         const response = await fetch(`${Api}chat/conversation`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ friendlyName: 'Prueba', identity }),
+          body: JSON.stringify({ friendlyName: uniqueFriendlyName, identity, tarotistaIdentity }),
         });
 
         if (!response.ok) throw new Error('Error creando conversación');
 
         const data = await response.json();
-
-        console.log('Conversación creada o recuperada:', data);
         setToken(data.twilioToken);
         setConversationSid(data.sid);
       } catch (error) {
@@ -41,23 +59,20 @@ const ChatComponent = () => {
     }
   }, [identity]);
 
-  // Inicializar cliente y suscribirse a eventos
   useEffect(() => {
     const initializeClient = async () => {
       if (token && conversationSid) {
         try {
           const client = await initializeChatClient(token);
-
-          console.log('Cliente de chat inicializado:', client);
-
-          client.on('connectionStateChanged', (state) => {
-            console.log('Estado de la conexión:', state);
-          });
-          
           client.on('tokenAboutToExpire', () => renewToken(client));
           client.on('tokenExpired', () => renewToken(client));
 
-          const convo = await client.getConversationBySid(conversationSid);
+          let convo;
+          try {
+            convo = await client.getConversationBySid(conversationSid);
+          } catch {
+            convo = await client.peekConversationBySid(conversationSid);
+          }
 
           convo.on('messageAdded', (message) => {
             setMessages((prev) => [...prev, message]);
@@ -74,7 +89,6 @@ const ChatComponent = () => {
     initializeClient();
   }, [token, conversationSid]);
 
-  // Renovar token
   const renewToken = async (client) => {
     try {
       const response = await fetch(`${Api}chat/token`, {
@@ -92,10 +106,9 @@ const ChatComponent = () => {
     }
   };
 
-  // Enviar mensaje
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (conversation && newMessage.trim() !== '') {
+    if (conversation && newMessage.trim() !== '' && chatActive) {
       try {
         await conversation.sendMessage(newMessage);
         setNewMessage('');
@@ -105,24 +118,80 @@ const ChatComponent = () => {
     }
   };
 
-  // Scroll automático
+  // Temporizador de cuenta regresiva
+  useEffect(() => {
+    if (!chatActive) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime === 61 && !oneMinuteWarned.current) {
+          toast.warning('⏳ Queda 1 minuto de sesión.', {
+            position: 'top-center',
+            autoClose: 5000,
+          });
+          oneMinuteWarned.current = true;
+        }
+
+        if (prevTime <= 1) {
+          clearInterval(timer);
+          setChatActive(false);
+          localStorage.setItem('chatFinalizado', 'true');
+
+          toast.info(
+            <div>
+              Gracias por comunicarse. <br />
+              Para continuar deberá abonar nuevamente.{' '}
+              <Link to="/selectPlan" className="underline text-blue-500">
+                Ir a pagar
+              </Link>
+            </div>,
+            {
+              position: 'top-center',
+              autoClose: false,
+              closeOnClick: true,
+            }
+          );
+
+          return 0;
+        }
+
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [chatActive]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <div className="p-4 bg-blue-600 text-white text-xl font-bold">
-        Chat
+    <div className="flex flex-col h-screen bg-gradient-to-br from-purple-100 to-green-100 font-sans">
+      <div className="p-4 bg-gradient-to-r from-purple-600 to-highlight text-white text-xl font-bold shadow-md tracking-wide flex justify-between items-center">
+        <span>{JSON.parse(localStorage.getItem('tarotistaSeleccionado'))?.name}</span>
+        <span className="text-sm font-medium bg-white text-purple-600 px-3 py-1 rounded">
+          {chatActive ? `Tiempo restante: ${formatTime(timeLeft)}` : 'Tiempo finalizado'}
+        </span>
       </div>
+
+      <ToastContainer />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex ${msg.author === identity ? 'justify-end' : 'justify-start'}`}
-          >
-            <div className={`max-w-xs px-4 py-2 rounded-lg ${msg.author === identity ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}>
+          <div key={index} className={`flex ${msg.author === identity ? 'justify-end' : 'justify-start'}`}>
+            <div
+              className={`max-w-xs px-4 py-2 rounded-lg shadow-md ${
+                msg.author === identity ? 'bg-highlight text-white' : 'bg-purple-200 text-gray-800'
+              }`}
+            >
+              <div className="text-sm font-semibold mb-1">{msg.author}</div>
               {msg.body}
             </div>
           </div>
@@ -130,17 +199,19 @@ const ChatComponent = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={sendMessage} className="flex items-center p-4 bg-white border-t">
+      <form onSubmit={sendMessage} className="flex items-center p-4 bg-white border-t border-purple-200">
         <input
           type="text"
-          placeholder="Escribe un mensaje..."
+          placeholder={chatActive ? 'Escribe tu mensaje...' : 'El tiempo ha terminado'}
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          disabled={!chatActive}
+          className="flex-1 p-2 border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
         />
         <button
           type="submit"
-          className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          disabled={!chatActive}
+          className="ml-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
         >
           Enviar
         </button>

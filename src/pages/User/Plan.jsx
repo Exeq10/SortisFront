@@ -19,7 +19,21 @@ function Plan() {
       "Plan 15 minutos + 2 free / $58.99": 58.99,
       "Plan 30 minutos + 2 free / $89.99": 89.99,
     };
-    setAmount(planAmounts[decodeURIComponent(plan)] || 0);
+
+    const planDurations = {
+      "Plan 5 minutos + 2 free / $14.99": 7 * 60 * 1000,
+      "Plan 15 minutos + 2 free / $58.99": 17 * 60 * 1000,
+      "Plan 30 minutos + 2 free / $89.99": 32 * 60 * 1000,
+    };
+
+    const decodedPlan = decodeURIComponent(plan);
+    setAmount(planAmounts[decodedPlan] || 0);
+
+    // Guardar duración del plan en localStorage (en segundos)
+    const durationInMs = planDurations[decodedPlan];
+    if (durationInMs) {
+      localStorage.setItem("chatDuracionPlan", Math.floor(durationInMs / 1000));
+    }
   }, [plan]);
 
   useEffect(() => {
@@ -152,7 +166,7 @@ function Plan() {
         </div>
       </div>
     </div>
-  );
+  );  
 }
 
 export default Plan;

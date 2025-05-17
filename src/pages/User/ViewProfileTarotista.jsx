@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 
@@ -65,14 +65,14 @@ function ViewProfileTarotista() {
         </motion.ul>
       </div>
 
-      <motion.div className="mt-5 flex justify-end items-end w-full px-5">
-        <motion.button 
-          className="py-2 px-3 bg-primario text-white rounded-md shadow w-[45%] mb-5"
+      <motion.div className="mt-5 flex justify-end  items-end w-full px-5">
+        <Link to={`/selectPlan`}
+          className="py-2 px-3 text-center bg-primario text-white rounded-md shadow w-[45%] mb-5"
           whileHover={{ scale: 1.1, boxShadow: "0px 4px 15px rgba(255, 165, 0, 0.4)" }}
           whileTap={{ scale: 0.95 }}
         >
           Contactar
-        </motion.button>
+        </Link>
       </motion.div>
     </motion.section>
   );

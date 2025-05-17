@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Spinner from "./components/Spinner";
 import InstallPrompt from "./components/InstallPrompt.jsx";
@@ -19,6 +19,7 @@ import ChatComponent from "./pages/User/ChatComponent.jsx";
 import PostDetail from "./components/PostDetail.jsx";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import BlogPosts from "./pages/User/BlogPost.jsx";
+import ChatTarotista from "./pages/Tarotista/ChatTarotista.jsx";
 
 /* Sección usuarios */
 const Landing = lazy(() => import("./pages/User/Landing"));
@@ -36,7 +37,11 @@ const LoginTarot = lazy(() => import("./pages/Tarotista/LoginTarot"));
 const DashboardAllTarot = lazy(() => import("./pages/Tarotista/DashboardAllTarot.jsx"));
 const Profile = lazy(() => import("./pages/User/Profile.jsx"));
 const Entrada = lazy(() => import("./pages/Tarotista/Entrada.jsx"));
-const ChatComponentTarotista = lazy(() => import("./pages/Tarotista/TarotistaChatComponent.jsx"));
+const ChatComponentTarotista = lazy(() => import("./pages/Tarotista/ChatTarotista.jsx"));
+
+
+
+
 
 const router = createBrowserRouter([
   /* Rutas públicas */
@@ -48,6 +53,8 @@ const router = createBrowserRouter([
   { path: "/verify-code", element: <VerifyCode /> },
   { path: "/new-password", element: <NewPassword /> },
   { path: "/terms&conditions", element: <TermsAndConditions /> },
+  { path: "/sala/tarotista", element: <ChatComponentTarotista /> }
+,
 
   /* Rutas protegidas para USUARIOS */
   {
@@ -101,6 +108,9 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+
+
+
   return (
 
     <PayPalScriptProvider options={{ "client-id": "AeLp0pscZ92wImVEIauH55-QoVaIDLByAW51YziCIUMweUuQAUfpxW15pnnVjxJoaEcqPSL-gedT-lUi", currency: "USD" }}>

@@ -25,6 +25,13 @@ function Login() {
     setShowPassword(!showPassword);
   };
 
+const [isCliked, setIsCliked] = useState(false);
+  const handleClick = () => { 
+
+    setIsCliked(!isCliked);
+    }
+
+
   const validateInputs = () => {
     let errors = [];
 
@@ -46,33 +53,33 @@ function Login() {
   const showErrorsInToast = (errors) => {
     errors.forEach((error) => toast.error(error));
   };
-
   const handleLogin = async (e) => {
     e.preventDefault();
-
+    setIsCliked(true); // Bloquea y muestra "Iniciando sesión..."
+  
     const errors = validateInputs();
     if (errors.length > 0) {
       showErrorsInToast(errors);
+      setIsCliked(false);
       return;
     }
-
+  
     try {
       const response = await fetch(`${Api}auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
+  
       const data = await response.json();
-      console.log(data);
-
+  
       if (response.ok) {
         dispatch(setUser(data.user));
         toast.success("Inicio de sesión exitoso");
-
+  
         if (data.user.isFirstLogin) {
           navigate("/onboarding");
-
+  
           await fetch(`${Api}auth/firstLoginDone`, {
             method: "PUT",
             headers: {
@@ -86,10 +93,13 @@ function Login() {
         }
       } else {
         toast.error(data.message || "Credenciales incorrectas");
+        setIsCliked(false);
       }
     } catch (error) {
       toast.error("Hubo un error al intentar iniciar sesión");
+      setIsCliked(false);
     }
+  
   };
   return (
     <motion.section
@@ -149,16 +159,18 @@ function Login() {
             </div>
             <Link to={'/recoveryPass'} className="text-white underline mt-2">¿Has olvidado tu contraseña?</Link>
           </div>
-
           <motion.button
-            type="submit"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="rounded-md mt-10 flex items-center justify-center font-cinzel px-6 py-3 w-full sm:w-[80%] lg:w-[60%] bg-gradient-to-r from-primario to-[#323465] text-white"
-          >
-            Iniciar sesión
-            <TiChevronRight className="ml-2" />
-          </motion.button>
+  type="submit"
+  whileHover={isCliked ? {} : { scale: 1.1 }} // Desactiva hover si isCliked es true
+  whileTap={{ scale: 0.95 }}
+  disabled={isCliked}
+  className={`rounded-md mt-10 flex items-center justify-center font-cinzel px-6 py-3 w-full sm:w-[80%] lg:w-[60%]
+    bg-gradient-to-r from-primario to-[#323465] text-white transition-all duration-300
+    ${isCliked ? "animate-pulse cursor-not-allowed" : "hover:scale-110"}`}
+>
+  {isCliked ? "Iniciando sesión..." : "Iniciar sesión"}
+  <TiChevronRight className="ml-2" />
+</motion.button>
         </motion.form>
       </motion.div>
 

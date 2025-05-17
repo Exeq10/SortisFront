@@ -1,106 +1,103 @@
-import { FaEnvelope, FaPhoneAlt } from "react-icons/fa";
+import { FaEnvelope } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-// eslint-disable-next-line react/prop-types
-function Tarotista({ tarotista }) {
-  // eslint-disable-next-line react/prop-types
-  const { ratings, name, image, _id } = tarotista;
+// Estrellas de valoración
+function RatingStars({ ratings = [] }) {
+  if (ratings.length === 0) return <p className="text-white">Sin valoraciones</p>;
 
-  // Componente para estrellas
-  const RatingStars = () => {
-    // eslint-disable-next-line react/prop-types
-    const avgRating =
-      ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
-    const filledStars = Math.floor(avgRating);
-    const halfStar = avgRating % 1 >= 0.5;
+  const avgRating = ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+  const filledStars = Math.floor(avgRating);
+  const halfStar = avgRating % 1 >= 0.5;
 
-    return (
-      <div className="flex text-xl md:text-2xl gap-1 md:gap-2">
-        {[...Array(5)].map((_, index) => {
-          if (index < filledStars) {
-            return (
-              <span key={index} className="star filled text-yellow-500">
-                ★
-              </span>
-            );
-          } else if (index === filledStars && halfStar) {
-            return (
-              <span key={index} className="star half text-yellow-500">
-                ★
-              </span>
-            );
-          } else {
-            return (
-              <span key={index} className="star text-gray-300">
-                ★
-              </span>
-            );
-          }
-        })}
-      </div>
-    );
-  };
+  return (
+    <div className="flex gap-1">
+      {[...Array(5)].map((_, index) => {
+        if (index < filledStars || (index === filledStars && halfStar)) {
+          return <span key={index} className="text-yellow-400">★</span>;
+        }
+        return <span key={index} className="text-gray-400">★</span>;
+      })}
+    </div>
+  );
+}
+
+function Tarotista({ tarotista, online }) {
+
+  console.log(online);
+  const {
+    _id,
+    name,
+    image,
+    ratings = [],
+    descripcion = "Consultas personalizadas y guía espiritual.",
+    especialidades = ["Amor", "Trabajo", "Espiritualidad"],
+    experience,
+  } = tarotista;
 
   const handleSelectTarotista = () => {
-    localStorage.setItem(
-      "tarotistaSeleccionado",
-      JSON.stringify(tarotista._id)
-    );
+    localStorage.setItem("tarotistaSeleccionado", JSON.stringify({ _id, name }));
   };
 
   return (
-    <div
-      id={_id}
-      className=" w-[95%] mt-2  m-auto border-accent border-4 rounded-2xl shadow-md flex flex-col"
-    >
-      <div className="flex justify-between py-4 px-4">
-        <Link
-          to={`/tarotistaProfile/${name}`}
-          className=" flex  justify-center items-center h-8 border-2 rounded-xl border-gray-300 px-3 font-cinzel bg-green-700 text-white transition duration-300 hover:bg-highlight hover:text-white"
-        >
-          Ver perfil
-        </Link>
-        <img src="/logo.png" alt="logo app" className="w-20 h-30" />
-      </div>
+    <div className="bg-white/10 backdrop-blur-sm border border-accent rounded-3xl shadow-xl overflow-hidden w-full max-w-sm mx-auto my-4 transform transition hover:scale-105">
+      <div className="relative flex flex-col items-center p-6 bg-gradient-to-br from-accent to-highlight">
+        {/* Imagen y estado */}
+    <div className="relative">
+  <div className="w-32 h-32 rounded-full overflow-hidden shadow-lg border-4 border-white">
+    <img src={image} alt={name} className="object-cover w-full h-full" />
+  </div>
+  <div
+    className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white z-10 ${
+      online ? "bg-green-500" : "bg-gray-400"
+    }`}
+    title={online ? "Disponible" : "Desconectado"}
+  />
+</div>
 
-      <div className="w-full flex justify-center items-center">
-        <img
-          src={image}
-          alt=""
-          className="w-[180px] h-[180px] md:w-[150px] md:h-[150px] rounded-full bg-gray-300"
-        />
-      </div>
+        {/* Nombre y descripción */}
+        <h2 className="mt-4 text-white font-uncial text-2xl text-center">{name}</h2>
+        <p className="text-sm text-white font-cinzel italic">Psíquico / Asesor espiritual</p>
+        <p className="text-white text-xs text-center mt-2 px-2">{descripcion}</p>
 
-      <div className="flex flex-col justify-center items-center mt-6 px-4 pb-6 pt-4 bg-gradient-to-bl from-accent to-softBlue rounded-t-2xl">
-        <h2 className="font-uncial text-xl md:text-2xl text-white">{name}</h2>
-        <p className="font-cinzel text-base md:text-lg text-white">
-          Psiquico / Asesor
-        </p>
+        {/* Especialidades */}
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          {especialidades.map((esp, index) => (
+            <span
+              key={index}
+              className="bg-white/20 text-white text-xs px-2 py-1 rounded-full font-cinzel"
+            >
+              {esp}
+            </span>
+          ))}
+        </div>
 
-        {/* Rating stars */}
+        {/* Estrellas y experiencia */}
+        <div className="mt-3 text-center flex flex-col justify-center items-center ">
+          <RatingStars ratings={ratings} />
+          <p className="text-white text-xs mt-1 font-cinzel">{experience} </p>
+        </div>
+
+        {/* Botón ver perfil */}
         <div className="mt-4">
-          <RatingStars />
+          <Link
+            to={`/tarotistaProfile/${name}`}
+            className="text-sm text-white font-cinzel px-4 py-1 border border-white rounded-full hover:bg-white hover:text-accent transition"
+          >
+            Ver perfil
+          </Link>
         </div>
+      </div>
 
-        {/* Botones responsivos */}
-        <div className="w-full flex flex-col md:flex-row gap-4 mt-6 px-2">
-          <Link
-            onClick={handleSelectTarotista}
-            to={"/selectPlan"}
-            className="flex-1 px-4 py-2 text-sm md:text-base border-2 border-accent font-cinzel rounded-md shadow-md bg-red-600 text-white flex items-center justify-center space-x-2 transition duration-300 hover:bg-green-900 hover:text-white"
-          >
-            <FaEnvelope className="w-4 h-4 md:w-5 md:h-5" />
-            <span>Mensaje</span>
-          </Link>
-          <Link
-            onClick={handleSelectTarotista}
-            to={"/selectPlan"}
-            className="flex-1 px-4 py-2 text-sm md:text-base border-2 border-accent font-cinzel rounded-md shadow-md bg-yellow-500 text-white flex items-center justify-center space-x-2 transition duration-300 hover:bg-green-900 hover:text-white"
-          >
-            <FaPhoneAlt className="w-4 h-4 md:w-5 md:h-5" />
-            <span>Llamada</span>
-          </Link>
-        </div>
+      {/* Botón comunicarse */}
+      <div className="bg-white p-4 flex justify-center">
+        <Link
+          onClick={handleSelectTarotista}
+          to="/selectPlan"
+          className="w-full text-center flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl font-cinzel transition"
+        >
+          <FaEnvelope />
+          <span>Comunicarse</span>
+        </Link>
       </div>
     </div>
   );

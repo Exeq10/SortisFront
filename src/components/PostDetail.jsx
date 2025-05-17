@@ -71,7 +71,7 @@ function PostDetail() {
       <div className="text-center text-sm text-gray-500 mb-10">
         Publicado por{" "}
         <span className="font-semibold">
-          {post.usuario?.nombre || "Anónimo"}
+          {post.nameUser || "Anónimo"}
         </span>{" "}
         el{" "}
         {post.createdAt

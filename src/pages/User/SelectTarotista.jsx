@@ -1,7 +1,10 @@
-import { useEffect } from "react";
+
+
+import { useEffect,useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setTarotistas } from "../../redux/tarotistasSlice";
 import Api from "../../utils/API";
+
 
 import Tarotista from "../../components/Tarotista";
 
@@ -16,7 +19,12 @@ function SelectTarotista() {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.user.token);
   const tarotistas = useSelector((state) => state.tarotistas);
+  const onlineTarotistas = useSelector((state) => state.onlineTarotistas);
 
+ console.log(onlineTarotistas);
+ 
+
+ console.log(token);
   useEffect(() => {
     const fetchTarotistas = async () => {
       try {
@@ -46,6 +54,10 @@ function SelectTarotista() {
     }
   }, [token, dispatch]);
 
+
+
+ 
+
   return (
     <div className="flex flex-col w-full md:w-[30%] m-auto justify-center items-center">
       <h1 className="font-cinzel text-3xl mt-6 text-center max-w-[60%] text-accent">
@@ -62,7 +74,8 @@ function SelectTarotista() {
       >
         {tarotistas.map((tarotista, index) => (
           <SwiperSlide key={index}>
-            <Tarotista tarotista={tarotista} />
+            <Tarotista tarotista={tarotista}
+             isOnline={onlineTarotistas.includes(tarotista._id)} />
           </SwiperSlide>
         ))}
       </Swiper>

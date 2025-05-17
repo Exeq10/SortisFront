@@ -5,7 +5,8 @@ import { Workbox } from 'workbox-window';
 export function register() {
   if ('serviceWorker' in navigator) {
     // Crear una nueva instancia de Workbox para nuestro archivo de service worker
-    const wb = new Workbox(`${process.env.PUBLIC_URL}/service-worker.js`);
+   const wb = new Workbox(`${import.meta.env.BASE_URL}service-worker.js`,{type:'module'});
+
 
     // Escuchar cuando se instala o se activa el service worker
     wb.addEventListener('installed', event => {

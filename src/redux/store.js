@@ -3,6 +3,7 @@ import userReducer from "./userSlice";
 import tarotistasReducer from "./tarotistasSlice";
 import tarotistaReducer from "./tarotistaSlice";
 import postReducer from "./postSlice"; 
+import onlineTarotistasReducer from "./onlineTarotistasSlice";
 
 // Función para guardar en localStorage
 const saveToLocalStorage = (state) => {
@@ -41,6 +42,7 @@ const store = configureStore({
     tarotistas: tarotistasReducer,
     tarotista: tarotistaReducer,
     posts: postReducer, 
+    onlineTarotistas: onlineTarotistasReducer,
   },
   preloadedState: loadFromLocalStorage(), // Pasar ambos datos (user y tarotista) al estado inicial
 });

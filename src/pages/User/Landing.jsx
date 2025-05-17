@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
+import { useMemo } from "react";
 
 function Landing() {
+  // Elegir un video aleatorio al cargar el componente
+  const videoSrc = useMemo(() => {
+    const videos = ["/video1.mp4", "/video2.mp4", "/video3.mp4"];
+    const randomIndex = Math.floor(Math.random() * videos.length);
+    return videos[randomIndex];
+  }, []);
+
   return (
     <section className="flex flex-col h-screen justify-center w-full items-center lg:px-8 overflow-hidden px-4 relative sm:px-6">
       {/* Video de fondo */}
@@ -10,7 +18,7 @@ function Landing() {
         muted
         className="h-full w-full absolute left-0 object-cover top-0"
       >
-        <source src="/CieloEstrellado.mp4" type="video/mp4" />
+        <source src={videoSrc} type="video/mp4" />
         Tu navegador no soporta videos HTML5.
       </video>
 
@@ -31,7 +39,6 @@ function Landing() {
       <p className="text-center text-gray-400 text-xs w-full bottom-4 font-light mt-16 relative sm:text-sm sm:w-auto z-10">
         SORTIS es una app web que ofrece como servicio el contacto con tarotistas
       </p>
-      
 
       <Link to={'/terms&conditions'} className="absolute bottom-4 right-4 text-gray-400 text-xs font-light hover:text-white transition duration-300 z-10"> Términos y condiciones </Link>
     </section>

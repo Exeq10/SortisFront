@@ -143,6 +143,33 @@ const PostEditor = () => {
     setId(post._id);
   };
 
+
+  const handleDeletePost = async (postId) => {
+
+    console.log(token);
+    if (!window.confirm("¿Estás seguro de que deseas eliminar esta entrada?")) return;
+  
+    try {
+      const response = await fetch(`${Api}post/${postId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (response.ok) {
+        toast.success("Entrada eliminada correctamente");
+        await reloadUserPosts(); // actualiza el listado
+      } else {
+        toast.error("Error al eliminar la entrada");
+        console.log(response);
+      }
+    } catch (error) {
+      console.error("Error al eliminar entrada:", error);
+      toast.error("Error de conexión con el servidor");
+    }
+  };
   return (
     <div className="w-full max-w-2xl mx-auto p-6 border rounded-md shadow-lg bg-white">
       <ToastContainer/>
@@ -201,7 +228,7 @@ const PostEditor = () => {
           : "Publicar Entrada"}
       </button>
 
-      <PostPublics posts={posts} onEdit={handleEditPost} />
+      <PostPublics posts={posts} onEdit={handleEditPost} onDelete={handleDeletePost} />
     </div>
   );
 };

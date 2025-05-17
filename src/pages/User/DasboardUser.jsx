@@ -18,7 +18,6 @@ const linksMenu = [
     label: "Perfil",
     link: "profile",
   },
-
   { label: "Novedades", link: "blog" },
   { label: "Favoritos (Proximamente)", link: "/favs" },
 ];
@@ -26,7 +25,7 @@ const linksMenu = [
 function DashboardUser() {
   const dispatch = useDispatch();
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   const toggleMenu = () => {
@@ -35,55 +34,73 @@ function DashboardUser() {
 
   useEffect(() => {
     setMenuOpen(false);
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
   }, []);
 
   return (
     <section className="relative flex flex-col w-full md:w-[30%] m-auto justify-center items-center">
       {/* Menú desplegable */}
       <div
-        className={`fixed top-0 left-0 h-full w-[70%] bg-white  shadow-lg transform ${
+        className={`fixed top-0 left-0 h-full w-[70%] bg-white shadow-lg transform ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-300 z-50`}
       >
-        <nav className="mt-10 flex flex-col items-start pl-6 space-y-4">
-          {linksMenu.map((link, key) => {
-            return (
-              <Link  onClick={() => {setMenuOpen(false)}}
+        <div className="mt-10 pl-6 pr-4">
+          {user && (
+            <div className="mb-6">
+              {user.image && (
+                <img
+                  src={user.image}
+                  alt="Perfil"
+                  className="w-16 h-16 rounded-full mb-2"
+                />
+              )}
+              <h2 className="text-primario text-md font-bold font-cinzel">
+                ¡Hola, {user.name}!
+              </h2>
+            </div>
+          )}
+
+          <nav className="mt-10 flex flex-col items-start space-y-4">
+            {linksMenu.map((link, key) => (
+              <Link
+                onClick={() => setMenuOpen(false)}
                 to={link.link}
                 key={key}
-                className="font-cinzel rounded-md  text-primario  duration-200 hover:scale-105  "
+                className="font-cinzel rounded-md text-primario duration-200 hover:scale-105"
               >
-                {" "}
-                {link.label}{" "}
-                
+                {link.label}
               </Link>
-            );
-          })}
-        </nav>
+            ))}
+          </nav>
 
-        <div className="w-[90%] m-auto ">
-          <p className="text-md text-primario mt-16 font-gara">
-            {obtenerFraseAleatoria("grupo3")}{" "}
-            <Link
-              to={""}
-              className="bg-highlight inline px-2 text-white rounded-md"
+          <div className="w-[90%] mt-16">
+            <p className="text-md text-primario font-gara">
+              {obtenerFraseAleatoria("grupo3")}{" "}
+              <Link
+                to={"/selectTarot"}
+                className="bg-highlight inline px-2 text-white rounded-md"
+              >
+                Consultar
+              </Link>
+            </p>
+          </div>
+
+          <div className="flex justify-center w-full mt-20">
+            <button
+              onClick={() => {
+                localStorage.clear();
+                setUser(null);
+                navigate("/");
+              }}
+              className="w-[90%] font-cinzel border-2 border-primario px-5 py-1 rounded-md hover:bg-highlight hover:text-white duration-200 bg-primario text-white"
             >
-              Consultar
-            </Link>
-          </p>
-        </div>
-
-        <div className="flex justify-center w-full">
-          <button
-            onClick={() => {
-              localStorage.removeItem("user");
-
-              navigate("/");
-            }}
-            className=" hover:cursor-auto w-[90%] font-cinzel border-2 border-white px-5 py-1 rounded-md  mt-64  hover:bg-highlight hover:text-white duration-200 bg-primario text-white "
-          >
-            Salir
-          </button>
+              Salir
+            </button>
+          </div>
         </div>
       </div>
 

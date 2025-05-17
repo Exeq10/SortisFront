@@ -18,7 +18,7 @@ export async function subscribeUser(tarotistaId) {
       console.log('🔐 Claves de suscripción:', subscription.toJSON().keys);
       console.log('🧙‍♂️ tarotistaId recibido:', tarotistaId);
 
-      const response = await fetch(`${Api}/guardar-suscripcion`, {
+      const response = await fetch(`${Api}guardar-suscripcion`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

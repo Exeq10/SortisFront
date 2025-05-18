@@ -4,7 +4,7 @@ import { getAnalytics } from "firebase/analytics";
 import { getMessaging ,getToken,onMessage} from "firebase/messaging";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCZ6Xfod-2hkGfAb3_iqZlJlHcAknH4HhU",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "sortis-web-notifications.firebaseapp.com",
   projectId: "sortis-web-notifications",
   storageBucket: "sortis-web-notifications.firebasestorage.app",

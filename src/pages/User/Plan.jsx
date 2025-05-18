@@ -4,12 +4,14 @@ import { useSelector } from "react-redux";
 import Goback from "../../components/Goback";
 import Api from "../../utils/API";
 
+import { ToastContainer,toast } from "react-toastify";
 function Plan() {
   const { plan } = useParams();
   const [amount, setAmount] = useState(0);
   const [error, setError] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
 
+ 
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
 
@@ -100,7 +102,7 @@ function Plan() {
 
         onApprove: async (data) => {
           try {
-            console.log("Pago aprobado, procesando captura...");
+            toast.success("Pago aprobado, procesando captura...");
             const response = await fetch(
               `${Api}payments/orders/${data.orderID}/capture`,
               {
@@ -142,6 +144,7 @@ function Plan() {
   return (
     <div className="flex flex-col justify-center w-full items-center min-h-screen px-2 py-6">
       <div className="flex flex-col bg-white p-6 rounded-lg shadow-lg w-full items-center max-w-md">
+        <ToastContainer />
         <h1 className="text-3xl text-accent text-center font-cinzel mb-6">
           Seleccionaste el siguiente plan
         </h1>

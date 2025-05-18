@@ -36,12 +36,14 @@ const ChatComponent = () => {
     // Si se inicia un nuevo chat, limpiamos el estado anterior
     localStorage.removeItem('chatFinalizado');
 
+    const fcmToken = localStorage.getItem('fcmToken');
+
     const setupConversation = async () => {
       try {
         const response = await fetch(`${Api}chat/conversation`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ friendlyName: uniqueFriendlyName, identity, tarotistaIdentity }),
+          body: JSON.stringify({ friendlyName: uniqueFriendlyName, identity, tarotistaIdentity,fcmToken }),
         });
 
         if (!response.ok) throw new Error('Error creando conversación');

@@ -9,23 +9,18 @@ import { setOnlineTarotistas } from "../../redux/onlineTarotistasSlice";
 import WidgetUltimoPago from "../../components/WidgetUltimoPago";
 import { set } from "date-fns";
 
-import { subscribeUser } from "./../../utils/pushNotifications.js";
+import { requestPermission,setupOnMessageListener } from "../../utils/notificationSetup";
+
+
 function DashboardAll() {
   const [socket, setSocket] = useState(null);
   const Tarotista = useSelector((state) => state.tarotista);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (Notification.permission === "granted") {
-      subscribeUser(Tarotista.name);
-    } else if (Notification.permission !== "denied") {
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          subscribeUser(Tarotista._id);
-        }
-      });
-    }
-  }, [Tarotista]);
+    requestPermission();
+    setupOnMessageListener();
+  }, []);
   useEffect(() => {
     if (!Tarotista || !Tarotista._id) return;
 

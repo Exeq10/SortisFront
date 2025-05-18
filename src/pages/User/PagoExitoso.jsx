@@ -50,9 +50,7 @@ function PagoExitoso() {
           <FaCheckCircle className="text-3xl" color="green" />
           Pago Exitoso
         </h1>
-        <p className="font-cinzel text-lg mt-4">
-          Te estaremos conectando con el tarotista. ¡Gracias por tu compra!
-        </p>
+      
         <p className="mt-6 text-center text-xl italic text-gray-600 transition-opacity duration-1000">
           {fraseActual}
         </p>

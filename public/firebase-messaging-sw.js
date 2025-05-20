@@ -10,7 +10,7 @@ firebase.initializeApp({
   appId: '1:73419944736:web:6dcb67879dd9807dd25d45',
 });
 
-const messaging = firebase.messaging();
+/* const messaging = firebase.messaging();
  
 messaging.onBackgroundMessage(function (payload) {
   const notificationTitle = payload.notification.title || 'Nuevo chat inicializado';
@@ -23,7 +23,7 @@ messaging.onBackgroundMessage(function (payload) {
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
-});
+}); */
  
 // 🧱 PWA: Cache básico
 const CACHE_NAME = 'mi-cache-v1';

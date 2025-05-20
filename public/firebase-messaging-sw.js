@@ -11,10 +11,9 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
-/* 
-// 🔔 Notificaciones en segundo plano con FCM
+ 
 messaging.onBackgroundMessage(function (payload) {
-  const notificationTitle = payload.notification.title || 'Notificación';
+  const notificationTitle = payload.notification.title || 'Nuevo chat inicializado';
   const notificationOptions = {
     body: payload.notification.body || 'Tienes una nueva notificación.',
     icon: payload.notification.icon || '/icon-192x192.png',
@@ -25,7 +24,7 @@ messaging.onBackgroundMessage(function (payload) {
 
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
- */
+ 
 // 🧱 PWA: Cache básico
 const CACHE_NAME = 'mi-cache-v1';
 const urlsToCache = [

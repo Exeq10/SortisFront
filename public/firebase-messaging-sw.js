@@ -86,18 +86,13 @@ self.addEventListener('push', event => {
   let data = {};
   if (event.data) {
     data = event.data.json();
+    console.log('[Push recibido]', data); // 👈 esto te va a decir si el contenido llega bien
   }
-
-  // Si vienen como string el vibrate, parsealo
-  let vibratePattern = [200, 100, 200];
-  try {
-    if (data.vibrate) vibratePattern = JSON.parse(data.vibrate);
-  } catch (e) {}
 
   const notificationOptions = {
     body: data.body || 'Tienes una nueva notificación',
-    icon: data.icon || '/default-icon.png',
-    vibrate: vibratePattern,
+    icon: data.icon || '/icon-192x192.png',
+    vibrate: JSON.parse(data.vibrate || '[200,100,200]'),
     sound: data.sound || 'default',
     data: {
       url: data.click_action || '/',

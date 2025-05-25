@@ -23,13 +23,13 @@ const ChatComponent = () => {
 const getTarotistaIdentity = async () => {
 
  try {
-       const res = await fetch(` ${Api}/users/find`, {
+       const res = await fetch(` ${Api}users/findById`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         
       },
-      body: JSON.stringify({ email: JSON.parse(localStorage.getItem('tarotistaSeleccionado'))?.email }),
+      body: JSON.stringify({ id: '67f0602b623491fd737c3b0c' /* JSON.parse(localStorage.getItem('tarotistaSeleccionado'))?._id */  }),
     });
 
     if (!res.ok) {
@@ -38,7 +38,8 @@ const getTarotistaIdentity = async () => {
 
     const data = await res.json();
     
-    return data._id;
+    
+    return data;
   } catch (error) {
     console.error('Error:', error.message);
   }
@@ -65,13 +66,19 @@ const getTarotistaIdentity = async () => {
 
     const setupConversation = async () => {
 
-        const tarotistaIdentity = await getTarotistaIdentity();
+        const user = await getTarotistaIdentity();
+
+        const tarotistaIdentity = user._id
+        const nameTarotista =  user.name
+
+        console.log('tarotistaIdentity', tarotistaIdentity._id);
+        
 
       try {
         const response = await fetch(`${Api}chat/conversation`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ friendlyName: uniqueFriendlyName, identity, tarotistaIdentity,fcmToken ,nameTarotista: JSON.parse(localStorage.getItem('tarotistaSeleccionado'))?.name }),
+          body: JSON.stringify({ friendlyName: uniqueFriendlyName, identity, tarotistaIdentity,fcmToken ,nameTarotista}),
         });
 
         if (!response.ok) throw new Error('Error creando conversación');

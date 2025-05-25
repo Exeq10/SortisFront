@@ -8,17 +8,17 @@ import 'react-toastify/dist/ReactToastify.css';
 const ChatTarotista = () => {
   const [searchParams] = useSearchParams();
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  const [newMessage, setNewMessage] = useState('');
   const [conversation, setConversation] = useState(null);
   const [error, setError] = useState('');
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutos
-  const [newMessage, setNewMessage] = useState('');
   const oneMinuteWarned = useRef(false);
   const messagesEndRef = useRef(null);
 
   const conversationSid = searchParams.get('conversationSid');
   const identity = searchParams.get('identity');
   const user = searchParams.get('user');
+  const nameTarotista = searchParams.get('nameTarotista');
 
   const chatActive = timeLeft > 0;
 
@@ -69,7 +69,6 @@ const ChatTarotista = () => {
     initChat();
   }, [conversationSid, identity]);
 
-  // Temporizador de cuenta regresiva
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => {
@@ -113,7 +112,7 @@ const ChatTarotista = () => {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-purple-100 to-green-100 font-sans">
       <div className="p-4 bg-gradient-to-r from-purple-600 to-highlight text-white text-xl font-bold shadow-md tracking-wide flex justify-between items-center">
-        <span>{user} </span>
+        <span>{user}</span>
         <span className="text-sm font-medium bg-white text-purple-600 px-3 py-1 rounded">
           {chatActive ? `Tiempo restante: ${formatTime(timeLeft)}` : 'Tiempo finalizado'}
         </span>
@@ -129,7 +128,9 @@ const ChatTarotista = () => {
                 msg.author === identity ? 'bg-highlight text-white' : 'bg-purple-200 text-gray-800'
               }`}
             >
-              <div className="text-sm font-semibold mb-1">{msg.author}</div>
+              <div className="text-sm font-semibold mb-1">
+                {msg.author === identity ? nameTarotista : user}
+              </div>
               {msg.body}
             </div>
           </div>

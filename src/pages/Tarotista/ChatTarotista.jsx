@@ -13,7 +13,7 @@ const ChatTarotista = () => {
   const [error, setError] = useState('');
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutos
   const [newMessage, setNewMessage] = useState('');
-  const oneMinuteWarned = useRef(false);+
+  const oneMinuteWarned = useRef(false);
   const messagesEndRef = useRef(null);
 
   const conversationSid = searchParams.get('conversationSid');

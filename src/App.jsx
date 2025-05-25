@@ -96,7 +96,7 @@ const router = createBrowserRouter([
           { path: "chats", element: <ChatList /> },
           { path: "create", element: <Entrada /> },
           { path: "statics", element: <Statics /> },
-          { path: "chat/:conversationSid", element: <ChatComponentTarotista /> }, 
+        
 
         ],
       },

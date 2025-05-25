@@ -43,7 +43,7 @@ const ChatComponent = () => {
         const response = await fetch(`${Api}chat/conversation`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ friendlyName: uniqueFriendlyName, identity, tarotistaIdentity,fcmToken }),
+          body: JSON.stringify({ friendlyName: uniqueFriendlyName, identity, tarotistaIdentity,fcmToken ,nameTarotista: JSON.parse(localStorage.getItem('tarotistaSeleccionado'))?.name }),
         });
 
         if (!response.ok) throw new Error('Error creando conversación');

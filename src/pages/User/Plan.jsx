@@ -118,7 +118,7 @@ function Plan() {
             console.log("Resultado de captura:", orderData);
 
             if (orderData?.payment?.transactionID) {
-              alert(
+              toast.success(
                 `Pago exitoso. ID de transacción: ${orderData.payment.transactionID}`
               );
               navigate("/pago-exitoso", { state: { orderData } });

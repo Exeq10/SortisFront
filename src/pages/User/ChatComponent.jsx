@@ -6,10 +6,7 @@ import { Link } from 'react-router-dom';
 
 const ChatComponent = () => {
   const user = JSON.parse(localStorage.getItem('user'));
-  const tarotista = JSON.parse(localStorage.getItem('tarotistaSeleccionado'));
-
   const identity = user?.name || 'desconocido';
-  const nameTarotista = tarotista?.name || 'tarotista';
   const [token, setToken] = useState(null);
   const [conversationSid, setConversationSid] = useState(null);
   const [chatClient, setChatClient] = useState(null);
@@ -17,33 +14,37 @@ const ChatComponent = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [friendlyName, setFriendlyName] = useState('');
-  const [timeLeft, setTimeLeft] = useState(Number(localStorage.getItem('chatDuracionPlan')) || 300);
+  const [timeLeft, setTimeLeft] = useState(localStorage.getItem('chatDuracionPlan')); // 5 minutos en segundos
   const [chatActive, setChatActive] = useState(true);
   const oneMinuteWarned = useRef(false);
   const messagesEndRef = useRef(null);
 
-  const getTarotistaIdentity = async () => {
 
+const getTarotistaIdentity = async () => {
 
-    
-    try {
-      const res = await fetch(`${Api}users/find`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify({ email: JSON.parse(localStorage.getItem('Tarotista'))?.email }),
+ try {
+       const res = await fetch(` ${Api}/users/find`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        
+      },
+      body: JSON.stringify({ email: JSON.parse(localStorage.getItem('tarotistaSeleccionado'))?.email }),
+    });
 
-      });
-
-      if (!res.ok) throw new Error('Error al obtener el perfil');
-
-      const data = await res.json();
-      return [data._id, data.name];
-    } catch (error) {
-      console.error('Error:', error.message);
-      return null;
+    if (!res.ok) {
+      throw new Error('Error al obtener el perfil');
     }
-  };
 
+    const data = await res.json();
+    
+    return data._id;
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+
+}
+  // Verifica si ya se finalizó una sesión previa
   useEffect(() => {
     const finalizado = localStorage.getItem('chatFinalizado') === 'true';
     if (finalizado) {
@@ -53,27 +54,24 @@ const ChatComponent = () => {
   }, []);
 
   useEffect(() => {
+  
     const uniqueFriendlyName = [identity, Date.now()].join('_');
     setFriendlyName(uniqueFriendlyName);
+
+    // Si se inicia un nuevo chat, limpiamos el estado anterior
     localStorage.removeItem('chatFinalizado');
 
     const fcmToken = localStorage.getItem('fcmToken');
 
     const setupConversation = async () => {
-      const tarotistaIdentity = await getTarotistaIdentity();
-      if (!tarotistaIdentity) return;
+
+        const tarotistaIdentity = await getTarotistaIdentity();
 
       try {
         const response = await fetch(`${Api}chat/conversation`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            friendlyName: uniqueFriendlyName,
-            identity,
-            tarotistaIdentity,
-            fcmToken,
-            nameTarotista,
-          }),
+          body: JSON.stringify({ friendlyName: uniqueFriendlyName, identity, tarotistaIdentity,fcmToken ,nameTarotista: JSON.parse(localStorage.getItem('tarotistaSeleccionado'))?.name }),
         });
 
         if (!response.ok) throw new Error('Error creando conversación');
@@ -150,6 +148,7 @@ const ChatComponent = () => {
     }
   };
 
+  // Temporizador de cuenta regresiva
   useEffect(() => {
     if (!chatActive) return;
 
@@ -206,7 +205,7 @@ const ChatComponent = () => {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-purple-100 to-green-100 font-sans">
       <div className="p-4 bg-gradient-to-r from-purple-600 to-highlight text-white text-xl font-bold shadow-md tracking-wide flex justify-between items-center">
-        <span>{tarotista?.name || 'Tarotista'}</span>
+        <span>{JSON.parse(localStorage.getItem('tarotistaSeleccionado'))?.name}</span>
         <span className="text-sm font-medium bg-white text-purple-600 px-3 py-1 rounded">
           {chatActive ? `Tiempo restante: ${formatTime(timeLeft)}` : 'Tiempo finalizado'}
         </span>

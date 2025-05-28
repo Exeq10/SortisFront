@@ -35,7 +35,7 @@ function Tarotista({ tarotista, online }) {
   } = tarotista;
 
   const handleSelectTarotista = () => {
-    localStorage.setItem("tarotistaSeleccionado", JSON.stringify({ _id, name }));
+    localStorage.setItem("tarotistaSeleccionado", JSON.stringify({ _id, name,image }));
   };
 
   return (

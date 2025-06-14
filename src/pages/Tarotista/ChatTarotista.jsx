@@ -22,6 +22,7 @@ const ChatTarotista = () => {
   // Parámetros de la URL
   const conversationSid = searchParams.get('conversationSid');
   const identity = searchParams.get('identity');
+  const image = searchParams.get('image');
   const user = searchParams.get('user');
   const nameTarotista = searchParams.get('nameTarotista');
 
@@ -130,7 +131,9 @@ const ChatTarotista = () => {
     <div className="flex flex-col h-screen bg-gradient-to-br from-purple-100 to-green-100 font-sans">
       
       {/* Header superior con nombre del usuario */}
-      <div className="p-4 bg-gradient-to-r from-purple-600 to-highlight text-white text-xl font-bold shadow-md tracking-wide flex justify-between items-center">
+      <div className="p-4 bg-gradient-to-r from-purple-600 to-highlight text-white text-xl font-bold shadow-md tracking-wide flex justify-start gap-5 items-center">
+
+         <img className='md:w-20 md:h-20 bg-white  w-10 h-10 rounded-full  border-2 md:border-4 border-green-500' src={image} alt="image"  />
         <span>{user}</span>
         {/* Ya no se muestra el contador aquí */}
       </div>

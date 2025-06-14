@@ -10,6 +10,7 @@ const ChatComponent = () => {
   // ⚙️ Datos del usuario
   const user = JSON.parse(localStorage.getItem('user'));
   const identity = user?.name || 'desconocido';
+  const image = user?.image || '/avatar.png';
 
   // 📦 Estados del componente
   const [token, setToken] = useState(null);
@@ -99,6 +100,7 @@ useEffect(() => {
           body: JSON.stringify({
             friendlyName: uniqueFriendlyName,
             identity,
+            image,
             tarotistaIdentity,
             fcmToken,
             nameTarotista: user.name,

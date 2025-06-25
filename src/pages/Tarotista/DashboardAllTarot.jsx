@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaRegEdit } from "react-icons/fa";
 import { LuMessageCircleMore } from "react-icons/lu";
 import { FaPhone } from "react-icons/fa6";
@@ -10,12 +10,16 @@ import WidgetUltimoPago from "../../components/WidgetUltimoPago";
 import { set } from "date-fns";
 
 import { requestPermission,setupOnMessageListener } from "../../utils/notificationSetup";
+import Api from "../../utils/API";
 
 
 function DashboardAll() {
   const [socket, setSocket] = useState(null);
   const Tarotista = useSelector((state) => state.tarotista);
   const dispatch = useDispatch();
+
+  const navigate = useNavigate()
+
 
   useEffect(() => {
     requestPermission();
@@ -24,7 +28,7 @@ function DashboardAll() {
   useEffect(() => {
     if (!Tarotista || !Tarotista._id) return;
 
-    const newSocket = io("http://localhost:3000");
+    const newSocket = io(Api);
     setSocket(newSocket);
 
     // REGISTRA al tarotista
@@ -59,13 +63,9 @@ function DashboardAll() {
       </div>
 
       <div className="flex w-full mt-8 justify-center gap-6 relative">
-        <div className="relative w-24 h-24 flex justify-center items-center text-5xl text-white bg-gradient-to-t from-accent to-softBlue shadow-md rounded-lg hover:scale-110 transition-transform duration-300 cursor-pointer">
+        <div onClick={()=>navigate('chats')} className="relative w-24 h-24 flex justify-center items-center text-5xl text-white bg-gradient-to-t from-accent to-softBlue shadow-md rounded-lg hover:scale-110 transition-transform duration-300 cursor-pointer">
           <LuMessageCircleMore />
-          {hasMessages && (
-            <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full">
-              !
-            </span>
-          )}
+         
         </div>
         <div className="relative w-24 h-24 border-2 shadow-md rounded-lg flex justify-center items-center text-5xl text-softBlue hover:scale-110 transition-transform duration-300 cursor-pointer">
           <FaPhone />

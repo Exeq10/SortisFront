@@ -7,7 +7,7 @@ import ProtectedTarotRoutes from "./components/ProtectedTarotRoutes.jsx";
 import ViewProfileTarotista from "./pages/User/ViewProfileTarotista";
 import Dashboard from "./pages/Tarotista/Dashboard.jsx";
 import UserProfile from "./pages/Tarotista/UserProfile.jsx";
-import ChatList from "./pages/Tarotista/ChatList.jsx";
+
 import Statics from "./pages/Tarotista/Statics.jsx";
 import ErrorPage from "./pages/ErrorPage"; // Importamos la ErrorPage
 import PagoExitoso from "./pages/User/PagoExitoso.jsx";
@@ -20,6 +20,7 @@ import PostDetail from "./components/PostDetail.jsx";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import BlogPosts from "./pages/User/BlogPost.jsx";
 import ChatTarotista from "./pages/Tarotista/ChatTarotista.jsx";
+import HistorialConversacionesTarotista from "./pages/Tarotista/HistorialConversacionesTarotista.jsx";
 
 /* Sección usuarios */
 const Landing = lazy(() => import("./pages/User/Landing"));
@@ -93,7 +94,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardAllTarot /> },
           { path: "profileTarot", element: <UserProfile /> },
-          { path: "chats", element: <ChatList /> },
+          { path: "chats", element: <HistorialConversacionesTarotista /> },
           { path: "create", element: <Entrada /> },
           { path: "statics", element: <Statics /> },
         

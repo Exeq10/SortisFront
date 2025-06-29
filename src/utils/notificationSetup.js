@@ -1,63 +1,80 @@
 // src/notificationSetup.js
-import { messaging,getToken,onMessage } from "../services/firebase-config";
-
-
-
+import { messaging, getToken, onMessage } from "../services/firebase-config";
 import Api from "./API";
 
-const Tarotista = JSON.parse(localStorage.getItem("tarotista"));
-
-
-console.log(Tarotista);
-
-
-
-
-
 export const requestPermission = async () => {
-  console.log('Solicitando permiso de notificaciones...');
-  console.log(import.meta.env.VITE_APP_API_FIREBASE_KEY);
+  console.log("🔔 Solicitando permiso de notificaciones...");
 
   const permission = await Notification.requestPermission();
-  if (permission === 'granted') {
-    console.log('Permiso concedido');
 
-    try {
+  if (permission !== "granted") {
+    console.log("🚫 Permiso de notificaciones denegado");
+    return;
+  }
 
-        
-      const currentToken = await getToken(messaging, {
-        vapidKey: import.meta.env.VITE_APP_API_FIREBASE_KEY,
-        serviceWorkerRegistration: await navigator.serviceWorker.ready,
-      });
+  console.log("✅ Permiso concedido");
 
-      if (currentToken) {
-       
-        localStorage.setItem('fcmToken', currentToken);
+  try {
+    const currentToken = await getToken(messaging, {
+      vapidKey: import.meta.env.VITE_APP_API_FIREBASE_KEY,
+      serviceWorkerRegistration: await navigator.serviceWorker.ready,
+    });
 
-
-        await fetch(`${Api}tokens`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${Tarotista.token}`, // token JWT
-  },
-  body: JSON.stringify({ token: currentToken , user: Tarotista._id }), // Asegúrate de que el ID de usuario esté disponible
-});
-      } else {
-        console.log('❌ No se obtuvo token. Solicitar permiso.');
-      }
-    } catch (err) {
-      console.error('💥 Error al obtener token:', err);
+    if (!currentToken) {
+      console.warn("❌ No se obtuvo token FCM");
+      return;
     }
-  } else {
-    console.log('🚫 Permiso denegado');
+
+    localStorage.setItem("fcmToken", currentToken);
+    console.log("📲 Token FCM obtenido:", currentToken);
+
+    // Buscar usuario o tarotista autenticado
+    const usuario = JSON.parse(localStorage.getItem("user"));
+    const tarotista = JSON.parse(localStorage.getItem("Tarotista"));
+
+    console.log("🧙‍♂️ tarotista:", tarotista);
+    console.log("🙋‍♂️ usuario:", usuario);
+
+    // Validar cuál es el que tiene datos correctos
+    const persona = usuario && usuario._id && usuario.token
+      ? usuario
+      : tarotista && tarotista._id && tarotista.token
+      ? tarotista
+      : null;
+
+    if (!persona) {
+      console.warn("⚠️ No hay usuario o tarotista autenticado correctamente en localStorage");
+      return;
+    }
+
+    console.log("👤 Persona seleccionada:", persona);
+    console.log("🆔 ID:", persona._id);
+    console.log("🔐 Token:", persona.token);
+
+    // Enviar el token al backend
+    await fetch(`${Api}tokens`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${persona.token}`,
+      },
+      body: JSON.stringify({
+        token: currentToken,
+        userId: persona._id,
+        role: persona.role || (usuario ? "user" : "tarotista"),
+      }),
+    });
+
+    console.log(`📨 Token FCM registrado para ${persona.role}`);
+
+  } catch (err) {
+    console.error("💥 Error al registrar token FCM:", err);
   }
 };
 
-// Mostrar mensajes cuando la app está en primer plano
 export const setupOnMessageListener = () => {
   onMessage(messaging, (payload) => {
-    console.log('📩 Notificación recibida en foreground:', payload);
-    // Podés mostrar una toast, modal, etc.
+    console.log("📩 Notificación recibida en foreground:", payload);
+    // Mostrar toast, sonido, alerta o lo que desees
   });
 };

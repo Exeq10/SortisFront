@@ -3,25 +3,21 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Goback from "../../components/Goback";
 import Api from "../../utils/API";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-import { ToastContainer,toast } from "react-toastify";
 function Plan() {
   const { plan } = useParams();
   const [amount, setAmount] = useState(0);
   const [error, setError] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
+  const [cuponesActivos, setCuponesActivos] = useState([]);
+  const [cuponSeleccionado, setCuponSeleccionado] = useState(null);
 
- 
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const planAmounts = {
-      "Plan 5 minutos + 2 free / $14.99": 14.99,
-      "Plan 15 minutos + 2 free / $58.99": 58.99,
-      "Plan 30 minutos + 2 free / $89.99": 89.99,
-    };
-
     const planDurations = {
       "Plan 5 minutos + 2 free / $14.99": 7 * 60 * 1000,
       "Plan 15 minutos + 2 free / $58.99": 17 * 60 * 1000,
@@ -29,14 +25,35 @@ function Plan() {
     };
 
     const decodedPlan = decodeURIComponent(plan);
-    setAmount(planAmounts[decodedPlan] || 0);
-
-    // Guardar duración del plan en localStorage (en segundos)
     const durationInMs = planDurations[decodedPlan];
+
     if (durationInMs) {
-      localStorage.setItem("chatDuracionPlan", Math.floor(durationInMs / 1000));
+      const duracionBaseSegundos = Math.floor(durationInMs / 1000);
+      localStorage.setItem("chatDuracionPlanBase", duracionBaseSegundos);
+
+      const extraSegundos = (cuponSeleccionado?.minutes || 0) * 60;
+      localStorage.setItem("chatDuracionPlan", duracionBaseSegundos + extraSegundos);
     }
-  }, [plan]);
+  }, [plan, cuponSeleccionado]);
+
+  const fetchCupones = async () => {
+    if (!user?._id) return;
+    try {
+      const res = await fetch(`${Api}coupons/available/${user._id}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+      const data = await res.json();
+      setCuponesActivos(data);
+    } catch (err) {
+      console.error("Error al obtener cupones:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCupones();
+  }, [user]);
 
   useEffect(() => {
     const loadPayPalScript = () => {
@@ -90,8 +107,6 @@ function Plan() {
             });
 
             const orderData = await response.json();
-            console.log("Orden creada:", orderData);
-
             if (orderData?.orderID) return orderData.orderID;
             throw new Error(orderData?.message || "Error al crear la orden");
           } catch (error) {
@@ -100,75 +115,74 @@ function Plan() {
           }
         },
 
-      onApprove: async (data) => {
-  try {
-    toast.success("Pago aprobado, procesando captura...");
+        onApprove: async (data) => {
+          try {
+            toast.success("Pago aprobado, procesando...");
 
-    // Capturar el pago
-    const captureResponse = await fetch(
-      `${Api}payments/orders/${data.orderID}/capture`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
+            const captureResponse = await fetch(
+              `${Api}payments/orders/${data.orderID}/capture`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${user.token}`,
+                },
+              }
+            );
+
+            const captureData = await captureResponse.json();
+            if (!captureData?.payment?.transactionID) {
+              throw new Error("Error al capturar el pago.");
+            }
+
+            const duracionBase = parseInt(localStorage.getItem("chatDuracionPlanBase")) || 0;
+            const minutosCupon = cuponSeleccionado ? cuponSeleccionado.minutes : 0;
+            const tiempoFinal = Math.floor(duracionBase / 60) + minutosCupon;
+
+            const tarotistaSeleccionado = JSON.parse(localStorage.getItem("tarotistaSeleccionado"));
+
+            const sessionResponse = await fetch(`${Api}sessions`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${user.token}`,
+              },
+              body: JSON.stringify({
+                usuario: user._id,
+                tarotista: tarotistaSeleccionado._id,
+                tiempoPlan: tiempoFinal,
+              }),
+            });
+
+            const sessionData = await sessionResponse.json();
+
+            toast.success(`Pago exitoso. ID transacción: ${captureData.payment.transactionID}`);
+            navigate("/pago-exitoso", {
+              state: { orderData: captureData, sessionData },
+            });
+          } catch (error) {
+            setError(error.message);
+            alert(`Error al procesar: ${error.message}`);
+          }
         },
-      }
-    );
 
-    const captureData = await captureResponse.json();
-    console.log("Resultado de captura:", captureData);
-
-    if (!captureData?.payment?.transactionID) {
-      throw new Error(
-        captureData?.message || "Error al capturar el pago o faltan datos."
-      );
-    }
-
-    // Crear la sesión
-   const tarotistaSeleccionado = JSON.parse(localStorage.getItem("tarotistaSeleccionado"));
-const duracion = localStorage.getItem("chatDuracionPlan"); // en segundos
-const tiempoPlan = Math.floor(duracion / 60); // convertir a minutos
-
-const sessionResponse = await fetch(`${Api}sessions`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${user.token}`,
-  },
-  body: JSON.stringify({
-    usuario: user._id,
-    tarotista: tarotistaSeleccionado._id,
-    tiempoPlan: tiempoPlan,
-  }),
-});
-
-    console.log(sessionResponse);
-    
-    const sessionData = await sessionResponse.json();
-    console.log("Sesión creada:", sessionData);
-
-    toast.success(
-      `Pago exitoso. ID de transacción: ${captureData.payment.transactionID}`
-    );
-
-    // Redirigir al usuario a la página de éxito
-    navigate("/pago-exitoso", {
-      state: { orderData: captureData, sessionData },
-    });
-
-  } catch (error) {
-    setError(error.message);
-    alert(`Error en la captura del pago o en la creación de la sesión: ${error.message}`);
-  }
-},
         onError: (err) => {
           console.error("Error en PayPal:", err);
           setError("Ocurrió un error al procesar el pago.");
         },
       }).render("#paypal-button-container");
     }
-  }, [sdkReady, amount, user?.token, plan, user?.email, navigate]);
+  }, [sdkReady, amount, user?.token, plan, user?.email, navigate, cuponSeleccionado]);
+
+  useEffect(() => {
+    const planAmounts = {
+      "Plan 5 minutos + 2 free / $14.99": 14.99,
+      "Plan 15 minutos + 2 free / $58.99": 58.99,
+      "Plan 30 minutos + 2 free / $89.99": 89.99,
+    };
+    const decodedPlan = decodeURIComponent(plan);
+    setAmount(planAmounts[decodedPlan] || 0);
+  }, [plan]);
 
   return (
     <div className="flex flex-col justify-center w-full items-center min-h-screen px-2 py-6">
@@ -180,10 +194,71 @@ const sessionResponse = await fetch(`${Api}sessions`, {
         <div className="bg-gradient-to-r border-2 border-accent rounded-md shadow-md text-center text-white text-xl w-full font-cinzel from-accent mt-6 px-4 py-4 to-highlight uppercase">
           {decodeURIComponent(plan)}
         </div>
+
+        {cuponesActivos.length > 0 && (
+          <div className="mt-6 w-full">
+            <h2 className="text-xl font-semibold mb-2 text-center text-accent">
+              Tus cupones activos
+            </h2>
+            <ul className="flex flex-col gap-2 max-h-40 overflow-auto px-2">
+              {cuponesActivos.map((cupon) => (
+                <li
+                  key={cupon._id}
+                  className="flex items-center justify-between border rounded p-2 cursor-pointer hover:bg-gray-100"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`${Api}coupons/${cupon.name}/apply`, {
+                        method: "PATCH",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${user.token}`,
+                        },
+                        body: JSON.stringify({ userId: user._id }),
+                      });
+
+                      if (!res.ok) throw new Error("Error al aplicar el cupón");
+
+                      setCuponSeleccionado(cupon);
+                      setCuponesActivos((prev) =>
+                        prev.filter((c) => c._id !== cupon._id)
+                      );
+                      toast.success(`🎉 Cupón "${cupon.name}" aplicado con éxito`);
+                    } catch (err) {
+                      console.error(err);
+                      toast.error("❌ No se pudo aplicar el cupón");
+                    }
+                  }}
+                >
+                  <div>
+                    <p className="font-semibold">{cupon.name}</p>
+                    <p className="text-sm text-gray-600">{cupon.minutes} minutos extra</p>
+                    <p className="text-xs text-gray-400">
+                      Vence: {new Date(cupon.expiresAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <input
+                    type="radio"
+                    name="cupon"
+                    checked={cuponSeleccionado?._id === cupon._id}
+                    onChange={() => {}}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {cuponSeleccionado && (
+          <p className="mt-4 text-green-600 text-center">
+            🎁 Aplicarás <b>{cuponSeleccionado.minutes}</b> minutos extra con el cupón{" "}
+            <b>{cuponSeleccionado.name}</b>.
+          </p>
+        )}
+
         <div className="text-center mt-8">
           <p className="text-gray-700 text-lg font-cinzel mb-4">
-            El monto a pagar es:{" "}
-            <span className="text-accent font-bold">${amount}</span>
+            El monto a pagar es: <span className="text-accent font-bold">${amount}</span>
           </p>
         </div>
 
@@ -198,7 +273,7 @@ const sessionResponse = await fetch(`${Api}sessions`, {
         </div>
       </div>
     </div>
-  );  
+  );
 }
 
 export default Plan;

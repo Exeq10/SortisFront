@@ -22,6 +22,7 @@ import { setOnlineTarotistas } from "../redux/onlineTarotistasSlice";
 
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { requestPermission, setupOnMessageListener } from "../utils/notificationSetup";
 
 function DashboardAll() {
   const dispatch = useDispatch();
@@ -33,6 +34,15 @@ function DashboardAll() {
 
   console.log(tarotistas);
   const [socket, setSocket] = useState(null);
+
+
+
+  useEffect(() => {
+    requestPermission();
+    setupOnMessageListener();
+  }, []);
+  
+
 
   useEffect(() => {
     const newSocket = io("http://localhost:3000");

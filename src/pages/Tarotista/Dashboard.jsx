@@ -18,6 +18,8 @@ const linksMenu = [
   },
   { label: "Entradas", link: "create" },
   { label: "Estadisticas", link: "statics" },
+  { label: "Cupones", link: "coupons" },
+ 
 ];
 
 function Dashboard() {

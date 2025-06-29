@@ -200,7 +200,18 @@ const ChatComponent = () => {
   useEffect(() => {
     if (!chatActive || !timerStarted) return;
 
-    const timer = setInterval(async () => {
+    // Toast que avisa al iniciar el timer
+    toast.info(
+      '⚠️ No recargues ni salgas del chat para no perder la conexión con tu tarotista.',
+      {
+        position: 'top-center',
+        autoClose: 6000,
+        closeOnClick: true,
+        pauseOnHover: true,
+      }
+    );
+
+    const timer = setInterval(() => {
       setTimeLeft((prevTime) => {
         if (prevTime === 61 && !oneMinuteWarned.current) {
           toast.warning('⏳ Queda 1 minuto de sesión.', {

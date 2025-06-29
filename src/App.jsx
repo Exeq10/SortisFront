@@ -21,6 +21,7 @@ import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import BlogPosts from "./pages/User/BlogPost.jsx";
 import ChatTarotista from "./pages/Tarotista/ChatTarotista.jsx";
 import HistorialConversacionesTarotista from "./pages/Tarotista/HistorialConversacionesTarotista.jsx";
+import CouponManager from "./pages/Tarotista/CouponManager.jsx";
 
 /* Sección usuarios */
 const Landing = lazy(() => import("./pages/User/Landing"));
@@ -97,6 +98,7 @@ const router = createBrowserRouter([
           { path: "chats", element: <HistorialConversacionesTarotista /> },
           { path: "create", element: <Entrada /> },
           { path: "statics", element: <Statics /> },
+          { path: "coupons", element: <CouponManager /> },
         
 
         ],

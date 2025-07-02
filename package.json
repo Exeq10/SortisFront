@@ -29,6 +29,7 @@
     "react-toastify": "^11.0.5",
     "redux": "^5.0.1",
     "socket.io-client": "^4.8.1",
+    "sweetalert2": "^11.22.2",
     "swiper": "^11.2.4",
     "workbox-core": "^7.1.0",
     "workbox-expiration": "^7.1.0",

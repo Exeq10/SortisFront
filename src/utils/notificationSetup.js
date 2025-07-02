@@ -1,12 +1,37 @@
 // src/notificationSetup.js
 import { messaging, getToken, onMessage } from "../services/firebase-config";
 import Api from "./API";
+import Swal from "sweetalert2";
 
 export const requestPermission = async () => {
   console.log("🔔 Solicitando permiso de notificaciones...");
 
-  const permission = await Notification.requestPermission();
+  // 👇 Verificar si ya se mostró antes
+  if (localStorage.getItem("notificacionesSolicitadas") === "true") {
+    console.log("🔕 El usuario ya fue consultado anteriormente.");
+    return;
+  }
 
+  const { isConfirmed } = await Swal.fire({
+    title: "¿Activar notificaciones?",
+    text: "El sistema de notificaciones es importante para acceder a todas las funcionalidades de la app.",
+    imageUrl: "/not.png",
+    showCancelButton: true,
+    confirmButtonText: "Activar",
+    cancelButtonText: "No, gracias",
+    confirmButtonColor: "#3A0164",
+    cancelButtonColor: "#d33",
+  });
+
+  // 👇 Marcar como ya mostrado (sea que aceptó o no)
+  localStorage.setItem("notificacionesSolicitadas", "true");
+
+  if (!isConfirmed) {
+    console.log("❌ El usuario rechazó desde el modal personalizado");
+    return;
+  }
+
+  const permission = await Notification.requestPermission();
   if (permission !== "granted") {
     console.log("🚫 Permiso de notificaciones denegado");
     return;
@@ -28,14 +53,9 @@ export const requestPermission = async () => {
     localStorage.setItem("fcmToken", currentToken);
     console.log("📲 Token FCM obtenido:", currentToken);
 
-    // Buscar usuario o tarotista autenticado
     const usuario = JSON.parse(localStorage.getItem("user"));
     const tarotista = JSON.parse(localStorage.getItem("Tarotista"));
 
-    console.log("🧙‍♂️ tarotista:", tarotista);
-    console.log("🙋‍♂️ usuario:", usuario);
-
-    // Validar cuál es el que tiene datos correctos
     const persona = usuario && usuario._id && usuario.token
       ? usuario
       : tarotista && tarotista._id && tarotista.token
@@ -47,11 +67,6 @@ export const requestPermission = async () => {
       return;
     }
 
-    console.log("👤 Persona seleccionada:", persona);
-    console.log("🆔 ID:", persona._id);
-    console.log("🔐 Token:", persona.token);
-
-    // Enviar el token al backend
     await fetch(`${Api}tokens`, {
       method: "POST",
       headers: {

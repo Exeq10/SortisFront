@@ -54,53 +54,67 @@ const [isCliked, setIsCliked] = useState(false);
     errors.forEach((error) => toast.error(error));
   };
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsCliked(true); // Bloquea y muestra "Iniciando sesión..."
-  
-    const errors = validateInputs();
-    if (errors.length > 0) {
-      showErrorsInToast(errors);
-      setIsCliked(false);
-      return;
-    }
-  
-    try {
-      const response = await fetch(`${Api}auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        dispatch(setUser(data.user));
-        toast.success("Inicio de sesión exitoso");
-  
-        if (data.user.isFirstLogin) {
-          navigate("/onboarding");
-  
-          await fetch(`${Api}auth/firstLoginDone`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${data.token}`,
-            },
-            body: JSON.stringify({ userId: data.user._id }),
-          });
-        } else {
-          navigate("/dashboardUser");
-        }
+
+    console.log("🌐 Endpoint:", `${Api}auth/login`);
+  e.preventDefault();
+  console.log("📥 Enviando formulario de login...");
+
+  setIsCliked(true);
+
+  const errors = validateInputs();
+  if (errors.length > 0) {
+    console.warn("⚠️ Errores de validación:", errors);
+    showErrorsInToast(errors);
+    setIsCliked(false);
+    return;
+  }
+
+  console.log("✅ Validación superada. Enviando a:", `${Api}auth/login`);
+  console.log("📦 Datos:", { email, password });
+
+  try {
+    const response = await fetch(`${Api}auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+    console.log("📬 Respuesta recibida:", data);
+
+    if (response.ok) {
+      dispatch(setUser(data.user));
+      toast.success("Inicio de sesión exitoso");
+
+      if (data.user.isFirstLogin) {
+        console.log("🆕 Primer login detectado");
+        navigate("/onboarding");
+
+        await fetch(`${Api}auth/firstLoginDone`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${data.token}`,
+          },
+          body: JSON.stringify({ userId: data.user._id }),
+        });
       } else {
-        toast.error(data.message || "Credenciales incorrectas");
-        setIsCliked(false);
+        console.log("🔁 Redirigiendo a dashboardUser");
+        navigate("/dashboardUser");
       }
-    } catch (error) {
-      toast.error("Hubo un error al intentar iniciar sesión");
+    } else {
+      console.warn("❌ Error en login:", data);
+      toast.error(data.message || "Credenciales incorrectas");
       setIsCliked(false);
     }
+  } catch (error) {
+    console.error("🛑 Error en llamada a login:", error);
+    toast.error("Hubo un error al intentar iniciar sesión");
+    setIsCliked(false);
+  }
+};
   
-  };
+ 
   return (
     <motion.section
       initial={{ scale: 0.8, opacity: 0 }}

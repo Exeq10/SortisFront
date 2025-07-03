@@ -22,6 +22,7 @@ import BlogPosts from "./pages/User/BlogPost.jsx";
 import ChatTarotista from "./pages/Tarotista/ChatTarotista.jsx";
 import HistorialConversacionesTarotista from "./pages/Tarotista/HistorialConversacionesTarotista.jsx";
 import CouponManager from "./pages/Tarotista/CouponManager.jsx";
+import NotificationListener from "./components/NotificationListener.jsx";
 
 /* Sección usuarios */
 const Landing = lazy(() => import("./pages/User/Landing"));
@@ -119,6 +120,7 @@ function App() {
     <PayPalScriptProvider options={{ "client-id": "AeLp0pscZ92wImVEIauH55-QoVaIDLByAW51YziCIUMweUuQAUfpxW15pnnVjxJoaEcqPSL-gedT-lUi", currency: "USD" }}>
 
     <Suspense fallback={<Spinner />}>
+    <NotificationListener/>
       <RouterProvider router={router} />
       <InstallPrompt />
     </Suspense>

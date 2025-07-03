@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 const NotificationListener = () => {
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('push', event => {
+      navigator.serviceWorker.addEventListener('message', event => {
         if (event.data?.type === 'play_sound') {
           const audio = new Audio('/sound/soundNot.mp3');
           audio.play().catch(() => {

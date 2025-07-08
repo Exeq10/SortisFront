@@ -21,10 +21,10 @@ function SelectTarotista() {
   const tarotistas = useSelector((state) => state.tarotistas);
   const onlineTarotistas = useSelector((state) => state.onlineTarotistas);
 
- console.log(onlineTarotistas);
+
  
 
- console.log(token);
+
   useEffect(() => {
     const fetchTarotistas = async () => {
       try {
@@ -41,7 +41,7 @@ function SelectTarotista() {
 
         const data = await response.json();
         dispatch(setTarotistas(data));
-        console.log("Tarotistas obtenidos desde API:", data);
+       
       } catch (error) {
         console.error("Error al obtener tarotistas:", error.message);
       }
@@ -49,9 +49,8 @@ function SelectTarotista() {
 
     if (token && tarotistas.length === 0) {
       fetchTarotistas();
-    } else {
-      console.log("Usando tarotistas del store:", tarotistas);
-    }
+      return
+    } 
   }, [token, dispatch]);
 
 

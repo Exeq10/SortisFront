@@ -99,6 +99,7 @@ const ChatComponent = () => {
             tarotistaIdentity,
             fcmToken,
             nameTarotista: user.name,
+            tiempoPlan: timeLeft
           }),
         });
 

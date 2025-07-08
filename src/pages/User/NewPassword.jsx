@@ -62,13 +62,11 @@ function NewPassword() {
 
       const data = await res.json();
 
-      console.log(data);
-
       if (data.message === "Contraseña actualizada con éxito.") {
         localStorage.removeItem("verificationCode");
         localStorage.removeItem("recoveryEmail");
         toast.success("Contraseña actualizada con éxito.");
-      
+
         setTimeout(() => navigate("/login"), 2000);
       } else {
         toast.error(data.message || "Error al actualizar la contraseña.");

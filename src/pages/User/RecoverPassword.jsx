@@ -30,39 +30,35 @@ function RecoverPassword() {
 
     try {
       setIsChecking(true);
-      
-      const response = await fetch(`${Api}users/find`, { 
+
+      const response = await fetch(`${Api}users/find`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }) 
+        body: JSON.stringify({ email }),
       });
-      
+
       const data = await response.json();
 
-      console.log(data);
-      
-
-      if (!data.found ) {
+      if (!data.found) {
         throw new Error(data.message || "Este email no está registrado.");
-    
-      }else{
-        
- // Ahora sí generamos el código
- const verificationCode = generateVerificationCode();
- localStorage.setItem("verificationCode", verificationCode);
- localStorage.setItem("recoveryEmail", email);
+      } else {
+        // Ahora sí generamos el código
+        const verificationCode = generateVerificationCode();
+        localStorage.setItem("verificationCode", verificationCode);
+        localStorage.setItem("recoveryEmail", email);
 
- // Parámetros para enviar email
- const templateParams = { email, verification_code: verificationCode };
+        // Parámetros para enviar email
+        const templateParams = { email, verification_code: verificationCode };
 
- await emailjs.send("service_e41asqf", "template_noug7bq", templateParams, "OCGOUdtFQB5Ay6BIk");
+        await emailjs.send(
+          "service_e41asqf",
+          "template_noug7bq",
+          templateParams,
+          "OCGOUdtFQB5Ay6BIk"
+        );
         toast.success("Código de verificación enviado a tu correo");
         setTimeout(() => navigate("/verify-code"), 2000);
       }
-
-     
-
-      
     } catch (error) {
       toast.error(error.message);
     } finally {

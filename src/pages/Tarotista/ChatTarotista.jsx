@@ -13,6 +13,8 @@ const ChatTarotista = () => {
   const [newMessage, setNewMessage] = useState('');
   const [conversation, setConversation] = useState(null);
   const [error, setError] = useState('');
+  const [tiempoRestante, setTiempoRestante] = useState(null);
+  const [timerActivo, setTimerActivo] = useState(false);
   const messagesEndRef = useRef(null);
 
   const conversationSid = searchParams.get('conversationSid');
@@ -20,11 +22,22 @@ const ChatTarotista = () => {
   const image = searchParams.get('image');
   const user = searchParams.get('user');
   const nameTarotista = searchParams.get('nameTarotista');
+  const tiempoPlan = parseInt(searchParams.get('tiempoPlan'), 10);
 
   const identityMap = {
     [identity]: user,
     [nameTarotista]: nameTarotista,
   };
+
+  useEffect(() => {
+    const chatActivo = localStorage.getItem('chatActivo') === 'true';
+    const tiempoGuardado = parseInt(localStorage.getItem('tiempoChat'), 10);
+    const paramsGuardados = localStorage.getItem('chatParams');
+
+    if (chatActivo && tiempoGuardado > 0 && paramsGuardados) {
+      window.location.href = `/sala/tarotista${paramsGuardados}`;
+    }
+  }, []);
 
   useEffect(() => {
     const initChat = async () => {
@@ -56,6 +69,11 @@ const ChatTarotista = () => {
             }
           }
           setMessages((prev) => [...prev, msg]);
+
+          if (!timerActivo && msg.author !== identity) {
+            setTiempoRestante(tiempoPlan);
+            setTimerActivo(true);
+          }
         });
 
         const msgsPaginator = await conv.getMessages();
@@ -81,6 +99,50 @@ const ChatTarotista = () => {
 
     initChat();
   }, [conversationSid, identity]);
+
+  useEffect(() => {
+    if (!timerActivo || tiempoRestante === null) return;
+
+    const interval = setInterval(() => {
+      setTiempoRestante(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setTimerActivo(false);
+          localStorage.removeItem('chatActivo');
+          localStorage.removeItem('tiempoChat');
+          localStorage.removeItem('chatParams');
+          alert('⏱️ La sesión ha finalizado.');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timerActivo]);
+
+  useEffect(() => {
+    if (timerActivo && tiempoRestante !== null) {
+      localStorage.setItem('tiempoChat', tiempoRestante);
+      localStorage.setItem('chatActivo', 'true');
+      localStorage.setItem('chatParams', window.location.search);
+    }
+  }, [tiempoRestante, timerActivo]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (tiempoRestante > 0 && timerActivo) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [tiempoRestante, timerActivo]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -118,6 +180,12 @@ const ChatTarotista = () => {
         <img className='md:w-20 md:h-20 bg-white w-10 h-10 rounded-full border-2 md:border-4 border-green-500' src={image} alt="avatar" />
         <span>{user}</span>
       </div>
+
+      {tiempoRestante !== null && (
+        <div className="text-center text-sm bg-white text-purple-700 p-2">
+          Tiempo restante: {Math.floor(tiempoRestante / 60)}:{(tiempoRestante % 60).toString().padStart(2, '0')}
+        </div>
+      )}
 
       <ToastContainer />
 

@@ -22,7 +22,10 @@ import { setOnlineTarotistas } from "../redux/onlineTarotistasSlice";
 
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { requestPermission, setupOnMessageListener } from "../utils/notificationSetup";
+import {
+  requestPermission,
+  setupOnMessageListener,
+} from "../utils/notificationSetup";
 
 function DashboardAll() {
   const dispatch = useDispatch();
@@ -32,24 +35,19 @@ function DashboardAll() {
   const posts = useSelector((state) => state.posts);
   const onlineTarotistas = useSelector((state) => state.onlineTarotistas);
 
-  console.log(tarotistas);
   const [socket, setSocket] = useState(null);
-
-
 
   useEffect(() => {
     requestPermission();
     setupOnMessageListener();
   }, []);
-  
-
 
   useEffect(() => {
     const newSocket = io("http://localhost:3000");
     setSocket(newSocket);
 
     newSocket.on("updateOnlineTarotistas", (onlineIds) => {
-      const nuevos = onlineIds.filter(id => !onlineTarotistas.includes(id));
+      const nuevos = onlineIds.filter((id) => !onlineTarotistas.includes(id));
       if (nuevos.length > 0) {
         toast.success("¡Un nuevo tarotista se ha conectado!", {
           position: "top-right",
@@ -66,8 +64,6 @@ function DashboardAll() {
 
   useEffect(() => {
     const fetchTarotistas = async () => {
-      console.log(token);
-
       try {
         const response = await fetch(`${Api}users/tarotistas`, {
           method: "GET",
@@ -106,7 +102,7 @@ function DashboardAll() {
 
   return (
     <div className="bg-white min-h-screen w-full">
-      <ToastContainer/>
+      <ToastContainer />
       {/* Hero */}
       <div className="relative w-full h-60 flex items-center justify-center text-accent">
         <div className="text-center">
@@ -172,23 +168,22 @@ function DashboardAll() {
         </motion.h2>
 
         <Swiper
-  spaceBetween={20}
-  slidesPerView={1}
-  pagination={{ clickable: true }}
-  modules={[Pagination]}
-  className="w-full max-w-5xl"
->
+          spaceBetween={20}
+          slidesPerView={1}
+          pagination={{ clickable: true }}
+          modules={[Pagination]}
+          className="w-full max-w-5xl"
+        >
           {[...posts]
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .map((post) => (
               <SwiperSlide key={post._id}>
-              <div className="flex justify-center">
-                <motion.div whileHover={{ scale: 1.02 }}>
-                  <PostWiewUser posts={[post]} />
-                </motion.div>
-              </div>
-            </SwiperSlide>
-            
+                <div className="flex justify-center">
+                  <motion.div whileHover={{ scale: 1.02 }}>
+                    <PostWiewUser posts={[post]} />
+                  </motion.div>
+                </div>
+              </SwiperSlide>
             ))}
         </Swiper>
 
@@ -207,25 +202,25 @@ function DashboardAll() {
         </motion.h2>
 
         <Swiper
-  spaceBetween={20}
-  slidesPerView={1}
-  pagination={{ clickable: true }}
-  loop
-  modules={[Pagination]}
-  className="w-full max-w-5xl"
->
-  {tarotistas.map((tarotista, index) => {
-    const isOnline = onlineTarotistas.includes(tarotista._id);
-    console.log(isOnline);
-    return (
-      <SwiperSlide key={index}>
-        <motion.div whileHover={{ scale: 1.02 }}>
-          <Tarotista tarotista={tarotista} online={isOnline} />
-        </motion.div>
-      </SwiperSlide>
-    );
-  })}
-</Swiper>
+          spaceBetween={20}
+          slidesPerView={1}
+          pagination={{ clickable: true }}
+          loop
+          modules={[Pagination]}
+          className="w-full max-w-5xl"
+        >
+          {tarotistas.map((tarotista, index) => {
+            const isOnline = onlineTarotistas.includes(tarotista._id);
+
+            return (
+              <SwiperSlide key={index}>
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Tarotista tarotista={tarotista} online={isOnline} />
+                </motion.div>
+              </SwiperSlide>
+            );
+          })}
+        </Swiper>
       </div>
     </div>
   );

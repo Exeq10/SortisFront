@@ -11,16 +11,15 @@ function CouponManager() {
   const [message, setMessage] = useState(null);
   const [coupons, setCoupons] = useState([]);
   const [editId, setEditId] = useState(null);
-  const [editData, setEditData] = useState({ name: "", minutes: "", expiresAt: "" });
+  const [editData, setEditData] = useState({
+    name: "",
+    minutes: "",
+    expiresAt: "",
+  });
 
   // Cargar cupones existentes
   useEffect(() => {
     fetchCoupons();
-
-    console.log("Componente CouponManager montado, cargando cupones...");
-    console.log(coupons);
-    
-    
   }, []);
 
   const fetchCoupons = async () => {
@@ -150,7 +149,10 @@ function CouponManager() {
                   className="border px-2 py-1 rounded w-full md:w-1/4"
                   value={editData.minutes}
                   onChange={(e) =>
-                    setEditData((prev) => ({ ...prev, minutes: e.target.value }))
+                    setEditData((prev) => ({
+                      ...prev,
+                      minutes: e.target.value,
+                    }))
                   }
                 />
                 <input
@@ -158,14 +160,20 @@ function CouponManager() {
                   className="border px-2 py-1 rounded w-full md:w-1/3"
                   value={editData.expiresAt}
                   onChange={(e) =>
-                    setEditData((prev) => ({ ...prev, expiresAt: e.target.value }))
+                    setEditData((prev) => ({
+                      ...prev,
+                      expiresAt: e.target.value,
+                    }))
                   }
                 />
                 <div className="flex gap-2 mt-2 md:mt-0">
                   <button onClick={handleSaveEdit} className="text-green-600">
                     <FaSave />
                   </button>
-                  <button onClick={() => setEditId(null)} className="text-red-600">
+                  <button
+                    onClick={() => setEditId(null)}
+                    className="text-red-600"
+                  >
                     <FaTimes />
                   </button>
                 </div>
@@ -177,10 +185,16 @@ function CouponManager() {
                   {new Date(coupon.expiresAt).toLocaleDateString()}
                 </p>
                 <div className="flex gap-3 text-xl">
-                  <button onClick={() => handleEdit(coupon)} className="text-blue-600">
+                  <button
+                    onClick={() => handleEdit(coupon)}
+                    className="text-blue-600"
+                  >
                     <FaEdit />
                   </button>
-                  <button onClick={() => handleDelete(coupon._id)} className="text-red-600">
+                  <button
+                    onClick={() => handleDelete(coupon._id)}
+                    className="text-red-600"
+                  >
                     <FaTrash />
                   </button>
                 </div>

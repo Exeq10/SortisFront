@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FaRegFileAlt, FaImage } from "react-icons/fa";
 import Api from "../../utils/API";
 import { useSelector, useDispatch } from "react-redux";
-import { setPosts } from "../../redux/postSlice"; 
+import { setPosts } from "../../redux/postSlice";
 import PostPublics from "../../components/PostPublics";
 import { toast, ToastContainer } from "react-toastify";
 
@@ -11,7 +11,7 @@ const PostEditor = () => {
   const token = useSelector((state) => state.tarotista.token);
   const user_id = useSelector((state) => state.tarotista._id);
   const user_name = useSelector((state) => state.tarotista.name);
-  const posts = useSelector((state) => state.posts); 
+  const posts = useSelector((state) => state.posts);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -19,7 +19,7 @@ const PostEditor = () => {
   const [imageURL, setImageURL] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [editando, setEditando] = useState(false);
-  const [id, setId] = useState(null); 
+  const [id, setId] = useState(null);
 
   useEffect(() => {
     getPosts();
@@ -31,14 +31,12 @@ const PostEditor = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       const data = await response.json();
-      console.log(data);
-      
+
       dispatch(setPosts(data || [])); // Guardamos en Redux
-      console.log("Entradas publicadas:", data);
     } catch (error) {
       console.error("Error al cargar las entradas:", error);
     }
@@ -101,7 +99,9 @@ const PostEditor = () => {
       });
 
       if (response.ok) {
-        toast.success(editando ? "Entrada editada con éxito" : "Entrada publicada con éxito");
+        toast.success(
+          editando ? "Entrada editada con éxito" : "Entrada publicada con éxito"
+        );
         resetForm();
         await reloadUserPosts();
       } else {
@@ -143,12 +143,10 @@ const PostEditor = () => {
     setId(post._id);
   };
 
-
   const handleDeletePost = async (postId) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar esta entrada?"))
+      return;
 
-    console.log(token);
-    if (!window.confirm("¿Estás seguro de que deseas eliminar esta entrada?")) return;
-  
     try {
       const response = await fetch(`${Api}post/${postId}`, {
         method: "DELETE",
@@ -157,13 +155,12 @@ const PostEditor = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (response.ok) {
         toast.success("Entrada eliminada correctamente");
         await reloadUserPosts(); // actualiza el listado
       } else {
         toast.error("Error al eliminar la entrada");
-        console.log(response);
       }
     } catch (error) {
       console.error("Error al eliminar entrada:", error);
@@ -172,7 +169,7 @@ const PostEditor = () => {
   };
   return (
     <div className="w-full max-w-2xl mx-auto p-6 border rounded-md shadow-lg bg-white">
-      <ToastContainer/>
+      <ToastContainer />
       <h1 className="text-center font-cinzel text-2xl flex items-center justify-center text-primario font-semibold gap-2">
         {editando ? "Editar entrada" : "Crear nueva entrada"} <FaRegFileAlt />
       </h1>
@@ -228,7 +225,11 @@ const PostEditor = () => {
           : "Publicar Entrada"}
       </button>
 
-      <PostPublics posts={posts} onEdit={handleEditPost} onDelete={handleDeletePost} />
+      <PostPublics
+        posts={posts}
+        onEdit={handleEditPost}
+        onDelete={handleDeletePost}
+      />
     </div>
   );
 };

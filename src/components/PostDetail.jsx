@@ -23,7 +23,7 @@ function PostDetail() {
         });
 
 
-        console.log(response);
+        
 
 
         if (!response.ok) {

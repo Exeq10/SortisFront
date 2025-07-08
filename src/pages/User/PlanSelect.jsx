@@ -10,24 +10,24 @@ function PlanSelect() {
 
       <div className="mt-10 flex flex-col gap-7">
         <Link
-          to={`/PlanPaid/${encodeURIComponent("Plan 5 minutos + 2 free / $14.99")}`}
+          to={`/PlanPaid/${encodeURIComponent("Plan 5 minutos + 2 free / $9.99")}`}
           className="border-2 border-accent rounded-md shadow-md font-cinzel px-4 py-4 uppercase hover:bg-gradient-to-r from-accent to-highlight hover:text-white duration-200"
         >
-          Plan 5 minutos + 2 free / $14.99
+          Plan 5 minutos + 2 free / $9.99
         </Link>
 
         <Link
-          to={`/PlanPaid/${encodeURIComponent("Plan 15 minutos + 2 free / $58.99")}`}
+          to={`/PlanPaid/${encodeURIComponent("Plan 15 minutos + 2 free / $19.99")}`}
           className="border-2 border-accent rounded-md shadow-md font-cinzel px-4 py-4 uppercase hover:bg-gradient-to-r from-accent to-highlight hover:text-white duration-200"
         >
-          Plan 15 minutos + 2 free / $58.99
+          Plan 15 minutos + 2 free / $19.99
         </Link>
 
         <Link
-          to={`/PlanPaid/${encodeURIComponent("Plan 30 minutos + 2 free / $89.99")}`}
+          to={`/PlanPaid/${encodeURIComponent("Plan 30 minutos + 2 free / $34.99")}`}
           className="border-2 border-accent rounded-md shadow-md font-cinzel px-4 py-4 uppercase hover:bg-gradient-to-r from-accent to-highlight hover:text-white duration-200"
         >
-          Plan 30 minutos + 2 free / $89.99
+          Plan 30 minutos + 2 free / $34.99
         </Link>
 
         <p className="mt-5">

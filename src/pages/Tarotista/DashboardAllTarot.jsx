@@ -9,17 +9,18 @@ import { setOnlineTarotistas } from "../../redux/onlineTarotistasSlice";
 import WidgetUltimoPago from "../../components/WidgetUltimoPago";
 import { set } from "date-fns";
 
-import { requestPermission,setupOnMessageListener } from "../../utils/notificationSetup";
+import {
+  requestPermission,
+  setupOnMessageListener,
+} from "../../utils/notificationSetup";
 import Api from "../../utils/API";
-
 
 function DashboardAll() {
   const [socket, setSocket] = useState(null);
   const Tarotista = useSelector((state) => state.tarotista);
   const dispatch = useDispatch();
 
-  const navigate = useNavigate()
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     requestPermission();
@@ -35,7 +36,6 @@ function DashboardAll() {
     newSocket.emit("registerTarotista", { userId: Tarotista._id });
 
     newSocket.on("updateOnlineTarotistas", (onlineIds) => {
-      console.log("Tarotistas online:", onlineIds);
       dispatch(setOnlineTarotistas(onlineIds));
     });
 
@@ -63,9 +63,11 @@ function DashboardAll() {
       </div>
 
       <div className="flex w-full mt-8 justify-center gap-6 relative">
-        <div onClick={()=>navigate('chats')} className="relative w-24 h-24 flex justify-center items-center text-5xl text-white bg-gradient-to-t from-accent to-softBlue shadow-md rounded-lg hover:scale-110 transition-transform duration-300 cursor-pointer">
+        <div
+          onClick={() => navigate("chats")}
+          className="relative w-24 h-24 flex justify-center items-center text-5xl text-white bg-gradient-to-t from-accent to-softBlue shadow-md rounded-lg hover:scale-110 transition-transform duration-300 cursor-pointer"
+        >
           <LuMessageCircleMore />
-         
         </div>
         <div className="relative w-24 h-24 border-2 shadow-md rounded-lg flex justify-center items-center text-5xl text-softBlue hover:scale-110 transition-transform duration-300 cursor-pointer">
           <FaPhone />

@@ -17,44 +17,12 @@ function Plan() {
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
 
-
-
-  /* /////////////////////////////////////////////////////////limpiar  sandbox ///////////////////////////*/
-
-
-
-  function loadPaypalSdk(clientId) {
-  return new Promise((resolve, reject) => {
-    // Eliminar scripts de PayPal previos
-    const previousScripts = document.querySelectorAll('script[src*="paypal.com/sdk/js"]');
-    previousScripts.forEach((script) => script.remove());
-
-    // Limpiar localStorage de keys relacionadas a PayPal (opcional)
-    Object.keys(localStorage).forEach((key) => {
-      if (key.toLowerCase().includes('paypal')) {
-        localStorage.removeItem(key);
-      }
-    });
-
-    // Crear nuevo script SDK
-    const script = document.createElement("script");
-    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture`;
-    script.async = true;
-
-    script.onload = () => resolve(true);
-    script.onerror = () => reject(new Error("Error al cargar SDK PayPal"));
-
-    document.body.appendChild(script);
-  });
-}
-
-
- const planData = {
-  "Plan 5 minutos + 2 free / $9.99": { amount: 9.99, duration: 7 * 60 * 1000 },
-  "Plan 15 minutos + 2 free / $19.99": { amount: 19.99, duration: 17 * 60 * 1000 },
-  "Plan 30 minutos + 2 free / $34.99": { amount: 34.99, duration: 32 * 60 * 1000 },
-  "Plan 2 minutos / $2.49": { amount: 2.49, duration: 2 * 60 * 1000 }, // NUEVO PLAN
-};
+  const planData = {
+    "Plan 5 minutos + 2 free / $9.99": { amount: 9.99, duration: 7 * 60 * 1000 },
+    "Plan 15 minutos + 2 free / $19.99": { amount: 19.99, duration: 17 * 60 * 1000 },
+    "Plan 30 minutos + 2 free / $34.99": { amount: 34.99, duration: 32 * 60 * 1000 },
+    "Plan 2 minutos / $2.49": { amount: 2.49, duration: 2 * 60 * 1000 },
+  };
 
   useEffect(() => {
     const decodedPlan = decodeURIComponent(plan);
@@ -88,7 +56,9 @@ function Plan() {
 
   useEffect(() => {
     const loadPayPalScript = () => {
-      if (window.paypal) return setSdkReady(true);
+      const existingScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
+      if (existingScript) existingScript.remove();
+
       const script = document.createElement("script");
       script.src = `https://www.paypal.com/sdk/js?client-id=${import.meta.env.VITE_APP_PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
       script.async = true;
@@ -120,7 +90,10 @@ function Plan() {
         };
         const res = await fetch(`${Api}payments/orders`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${user.token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
           body: JSON.stringify({ cart }),
         });
         const orderData = await res.json();
@@ -131,7 +104,10 @@ function Plan() {
         toast.success("Pago aprobado, procesando...");
         const captureRes = await fetch(`${Api}payments/orders/${data.orderID}/capture`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${user.token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
         });
         const captureData = await captureRes.json();
         if (!captureData?.payment?.transactionID) throw new Error("Error al capturar el pago.");
@@ -143,7 +119,10 @@ function Plan() {
         const tarotistaSeleccionado = JSON.parse(localStorage.getItem("tarotistaSeleccionado"));
         const sessionRes = await fetch(`${Api}sessions`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${user.token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
           body: JSON.stringify({
             usuario: user._id,
             tarotista: tarotistaSeleccionado._id,

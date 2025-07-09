@@ -18,9 +18,18 @@ function Plan() {
   const navigate = useNavigate();
 
   const planData = {
-    "Plan 5 minutos + 2 free / $9.99": { amount: 9.99, duration: 7 * 60 * 1000 },
-    "Plan 15 minutos + 2 free / $19.99": { amount: 19.99, duration: 17 * 60 * 1000 },
-    "Plan 30 minutos + 2 free / $34.99": { amount: 34.99, duration: 32 * 60 * 1000 },
+    "Plan 5 minutos + 2 free / $9.99": {
+      amount: 9.99,
+      duration: 7 * 60 * 1000,
+    },
+    "Plan 15 minutos + 2 free / $19.99": {
+      amount: 19.99,
+      duration: 17 * 60 * 1000,
+    },
+    "Plan 30 minutos + 2 free / $34.99": {
+      amount: 34.99,
+      duration: 32 * 60 * 1000,
+    },
     "Plan 2 minutos / $2.49": { amount: 2.49, duration: 2 * 60 * 1000 },
   };
 
@@ -34,7 +43,10 @@ function Plan() {
       localStorage.setItem("chatDuracionPlanBase", duracionBaseSegundos);
 
       const extraSegundos = (cuponSeleccionado?.minutes || 0) * 60;
-      localStorage.setItem("chatDuracionPlan", duracionBaseSegundos + extraSegundos);
+      localStorage.setItem(
+        "chatDuracionPlan",
+        duracionBaseSegundos + extraSegundos
+      );
     }
   }, [plan, cuponSeleccionado]);
 
@@ -56,11 +68,15 @@ function Plan() {
 
   useEffect(() => {
     const loadPayPalScript = () => {
-      const existingScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
+      const existingScript = document.querySelector(
+        'script[src*="paypal.com/sdk/js"]'
+      );
       if (existingScript) existingScript.remove();
 
       const script = document.createElement("script");
-      script.src = `https://www.paypal.com/sdk/js?client-id=${import.meta.env.VITE_APP_PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
+      script.src = `https://www.paypal.com/sdk/js?client-id=${
+        import.meta.env.VITE_APP_PAYPAL_CLIENT_ID
+      }&currency=USD&intent=capture`;
       script.async = true;
       script.onload = () => setSdkReady(true);
       script.onerror = () => setError("Error al cargar el SDK de PayPal.");
@@ -71,74 +87,99 @@ function Plan() {
 
   useEffect(() => {
     if (!sdkReady || !window.paypal || !amount || !user?.token) return;
-    if (document.getElementById("paypal-button-container").childNodes.length) return;
+    if (document.getElementById("paypal-button-container").childNodes.length)
+      return;
 
-    window.paypal.Buttons({
-      createOrder: async () => {
-        const cart = {
-          email: user?.email,
-          totalAmount: amount,
-          items: [{
-            name: decodeURIComponent(plan),
-            price: amount,
-            quantity: 1,
-            description: "Suscripción de Plan",
-            sku: `PLAN-${amount}`,
-          }],
-          tarotista: JSON.parse(localStorage.getItem("tarotistaSeleccionado")),
-          user: user._id || user.id,
-        };
-        const res = await fetch(`${Api}payments/orders`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
-          },
-          body: JSON.stringify({ cart }),
-        });
-        const orderData = await res.json();
-        if (!orderData?.orderID) throw new Error(orderData.message || "Error al crear la orden");
-        return orderData.orderID;
-      },
-      onApprove: async (data) => {
-        toast.success("Pago aprobado, procesando...");
-        const captureRes = await fetch(`${Api}payments/orders/${data.orderID}/capture`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
-        const captureData = await captureRes.json();
-        if (!captureData?.payment?.transactionID) throw new Error("Error al capturar el pago.");
+    window.paypal
+      .Buttons({
+        createOrder: async () => {
+          const cart = {
+            email: user?.email,
+            totalAmount: amount,
+            items: [
+              {
+                name: decodeURIComponent(plan),
+                price: amount,
+                quantity: 1,
+                description: "Suscripción de Plan",
+                sku: `PLAN-${amount}`,
+              },
+            ],
+            tarotista: JSON.parse(
+              localStorage.getItem("tarotistaSeleccionado")
+            ),
+            user: user._id || user.id,
+          };
+          const res = await fetch(`${Api}payments/orders`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
+            },
+            body: JSON.stringify({ cart }),
+          });
+          const orderData = await res.json();
+          if (!orderData?.orderID)
+            throw new Error(orderData.message || "Error al crear la orden");
+          return orderData.orderID;
+        },
+        onApprove: async (data) => {
+          toast.success("Pago aprobado, procesando...");
+          const captureRes = await fetch(`${Api}payments/orders/capture`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
+            },
+            body: JSON.stringify({ orderID: data.orderID }), // ✅ CAMBIO AQUÍ
+          });
+          const captureData = await captureRes.json();
+          if (!captureData?.payment?.transactionID)
+            throw new Error("Error al capturar el pago.");
 
-        const duracionBase = parseInt(localStorage.getItem("chatDuracionPlanBase")) || 0;
-        const minutosCupon = cuponSeleccionado?.minutes || 0;
-        const tiempoFinal = Math.floor(duracionBase / 60) + minutosCupon;
+          const duracionBase =
+            parseInt(localStorage.getItem("chatDuracionPlanBase")) || 0;
+          const minutosCupon = cuponSeleccionado?.minutes || 0;
+          const tiempoFinal = Math.floor(duracionBase / 60) + minutosCupon;
 
-        const tarotistaSeleccionado = JSON.parse(localStorage.getItem("tarotistaSeleccionado"));
-        const sessionRes = await fetch(`${Api}sessions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
-          },
-          body: JSON.stringify({
-            usuario: user._id,
-            tarotista: tarotistaSeleccionado._id,
-            tiempoPlan: tiempoFinal,
-          }),
-        });
-        const sessionData = await sessionRes.json();
-        toast.success(`Pago exitoso. ID transacción: ${captureData.payment.transactionID}`);
-        navigate("/pago-exitoso", { state: { orderData: captureData, sessionData } });
-      },
-      onError: (err) => {
-        console.error("Error en PayPal:", err);
-        setError("Ocurrió un error al procesar el pago.");
-      },
-    }).render("#paypal-button-container");
-  }, [sdkReady, amount, user?.token, plan, user?.email, navigate, cuponSeleccionado]);
+          const tarotistaSeleccionado = JSON.parse(
+            localStorage.getItem("tarotistaSeleccionado")
+          );
+          const sessionRes = await fetch(`${Api}sessions`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
+            },
+            body: JSON.stringify({
+              usuario: user._id,
+              tarotista: tarotistaSeleccionado._id,
+              tiempoPlan: tiempoFinal,
+            }),
+          });
+          const sessionData = await sessionRes.json();
+          toast.success(
+            `Pago exitoso. ID transacción: ${captureData.payment.transactionID}`
+          );
+          navigate("/pago-exitoso", {
+            state: { orderData: captureData, sessionData },
+          });
+        },
+        onError: (err) => {
+          console.error("Error en PayPal:", err);
+          setError("Ocurrió un error al procesar el pago.");
+        },
+      })
+      .render("#paypal-button-container");
+  }, [
+    sdkReady,
+    amount,
+    user?.token,
+    plan,
+    user?.email,
+    navigate,
+    cuponSeleccionado,
+  ]);
 
   return (
     <div className="flex flex-col justify-center w-full items-center min-h-screen px-2 py-6">
@@ -153,7 +194,9 @@ function Plan() {
 
         {cuponesActivos.length > 0 && (
           <div className="mt-6 w-full">
-            <h2 className="text-xl font-semibold mb-2 text-center text-accent">Tus cupones activos</h2>
+            <h2 className="text-xl font-semibold mb-2 text-center text-accent">
+              Tus cupones activos
+            </h2>
             <ul className="flex flex-col gap-2 max-h-40 overflow-auto px-2">
               {cuponesActivos.map((cupon) => (
                 <li
@@ -161,18 +204,25 @@ function Plan() {
                   className="flex items-center justify-between border rounded p-2 cursor-pointer hover:bg-gray-100"
                   onClick={async () => {
                     try {
-                      const res = await fetch(`${Api}coupons/${cupon.name}/apply`, {
-                        method: "PATCH",
-                        headers: {
-                          "Content-Type": "application/json",
-                          Authorization: `Bearer ${user.token}`,
-                        },
-                        body: JSON.stringify({ userId: user._id }),
-                      });
+                      const res = await fetch(
+                        `${Api}coupons/${cupon.name}/apply`,
+                        {
+                          method: "PATCH",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${user.token}`,
+                          },
+                          body: JSON.stringify({ userId: user._id }),
+                        }
+                      );
                       if (!res.ok) throw new Error("Error al aplicar el cupón");
                       setCuponSeleccionado(cupon);
-                      setCuponesActivos((prev) => prev.filter((c) => c._id !== cupon._id));
-                      toast.success(`🎉 Cupón "${cupon.name}" aplicado con éxito`);
+                      setCuponesActivos((prev) =>
+                        prev.filter((c) => c._id !== cupon._id)
+                      );
+                      toast.success(
+                        `🎉 Cupón "${cupon.name}" aplicado con éxito`
+                      );
                     } catch (err) {
                       console.error(err);
                       toast.error("❌ No se pudo aplicar el cupón");
@@ -181,7 +231,9 @@ function Plan() {
                 >
                   <div>
                     <p className="font-semibold">{cupon.name}</p>
-                    <p className="text-sm text-gray-600">{cupon.minutes} minutos extra</p>
+                    <p className="text-sm text-gray-600">
+                      {cupon.minutes} minutos extra
+                    </p>
                     <p className="text-xs text-gray-400">
                       Vence: {new Date(cupon.expiresAt).toLocaleDateString()}
                     </p>
@@ -201,13 +253,15 @@ function Plan() {
 
         {cuponSeleccionado && (
           <p className="mt-4 text-green-600 text-center">
-            🎁 Aplicarás <b>{cuponSeleccionado.minutes}</b> minutos extra con el cupón <b>{cuponSeleccionado.name}</b>.
+            🎁 Aplicarás <b>{cuponSeleccionado.minutes}</b> minutos extra con el
+            cupón <b>{cuponSeleccionado.name}</b>.
           </p>
         )}
 
         <div className="text-center mt-8">
           <p className="text-gray-700 text-lg font-cinzel mb-4">
-            El monto a pagar es: <span className="text-accent font-bold">${amount}</span>
+            El monto a pagar es:{" "}
+            <span className="text-accent font-bold">${amount}</span>
           </p>
         </div>
 

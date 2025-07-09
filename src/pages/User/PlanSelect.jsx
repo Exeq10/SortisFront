@@ -29,6 +29,12 @@ function PlanSelect() {
         >
           Plan 30 minutos + 2 free / $34.99
         </Link>
+        <Link
+  to={`/PlanPaid/${encodeURIComponent("Plan 2 minutos / $2.49")}`}
+  className="border-2 border-accent rounded-md shadow-md font-cinzel px-4 py-4 uppercase hover:bg-gradient-to-r from-accent to-highlight hover:text-white duration-200"
+>
+  Plan 2 minutos / $2.49
+</Link>
 
         <p className="mt-5">
           En esta plataforma, garantizamos un espacio seguro y adecuado para nuestra comunidad. 

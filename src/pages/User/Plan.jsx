@@ -17,11 +17,52 @@ function Plan() {
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
 
+  // Función para limpiar SDK y localStorage y cargar PayPal SDK correcto
+  function loadPaypalSdk(clientId) {
+    return new Promise((resolve, reject) => {
+      // Eliminar scripts previos de PayPal
+      const previousScripts = document.querySelectorAll(
+        'script[src*="paypal.com/sdk/js"]'
+      );
+      previousScripts.forEach((script) => script.remove());
+
+      // Limpiar localStorage de keys relacionadas a PayPal
+      Object.keys(localStorage).forEach((key) => {
+        if (key.toLowerCase().includes("paypal")) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      // Crear nuevo script SDK
+      const script = document.createElement("script");
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture`;
+      script.async = true;
+
+      script.onload = () => resolve(true);
+      script.onerror = () => reject(new Error("Error al cargar SDK PayPal"));
+
+      document.body.appendChild(script);
+    });
+  }
+
   const planData = {
     "Plan 5 minutos + 2 free / $9.99": { amount: 9.99, duration: 7 * 60 * 1000 },
-    "Plan 15 minutos + 2 free / $19.99": { amount: 19.99, duration: 17 * 60 * 1000 },
-    "Plan 30 minutos + 2 free / $34.99": { amount: 34.99, duration: 32 * 60 * 1000 },
+    "Plan 15 minutos + 2 free / $19.99": {
+      amount: 19.99,
+      duration: 17 * 60 * 1000,
+    },
+    "Plan 30 minutos + 2 free / $34.99": {
+      amount: 34.99,
+      duration: 32 * 60 * 1000,
+    },
+    "Plan 2 minutos / $2.49": { amount: 2.49, duration: 2 * 60 * 1000 }, // NUEVO PLAN
   };
+
+  useEffect(() => {
+    loadPaypalSdk(import.meta.env.VITE_APP_PAYPAL_CLIENT_ID)
+      .then(() => setSdkReady(true))
+      .catch((e) => setError(e.message));
+  }, []);
 
   useEffect(() => {
     const decodedPlan = decodeURIComponent(plan);
@@ -54,19 +95,6 @@ function Plan() {
   }, [user]);
 
   useEffect(() => {
-    const loadPayPalScript = () => {
-      if (window.paypal) return setSdkReady(true);
-      const script = document.createElement("script");
-      script.src = "https://www.paypal.com/sdk/js?client-id=AeLp0pscZ92wImVEIauH55-QoVaIDLByAW51YziCIUMweUuQAUfpxW15pnnVjxJoaEcqPSL-gedT-lUi&currency=USD&intent=capture";
-      script.async = true;
-      script.onload = () => setSdkReady(true);
-      script.onerror = () => setError("Error al cargar el SDK de PayPal.");
-      document.body.appendChild(script);
-    };
-    loadPayPalScript();
-  }, []);
-
-  useEffect(() => {
     if (!sdkReady || !window.paypal || !amount || !user?.token) return;
     if (document.getElementById("paypal-button-container").childNodes.length) return;
 
@@ -75,19 +103,24 @@ function Plan() {
         const cart = {
           email: user?.email,
           totalAmount: amount,
-          items: [{
-            name: decodeURIComponent(plan),
-            price: amount,
-            quantity: 1,
-            description: "Suscripción de Plan",
-            sku: `PLAN-${amount}`,
-          }],
+          items: [
+            {
+              name: decodeURIComponent(plan),
+              price: amount,
+              quantity: 1,
+              description: "Suscripción de Plan",
+              sku: `PLAN-${amount}`,
+            },
+          ],
           tarotista: JSON.parse(localStorage.getItem("tarotistaSeleccionado")),
           user: user._id || user.id,
         };
         const res = await fetch(`${Api}payments/orders`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${user.token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
           body: JSON.stringify({ cart }),
         });
         const orderData = await res.json();
@@ -98,7 +131,10 @@ function Plan() {
         toast.success("Pago aprobado, procesando...");
         const captureRes = await fetch(`${Api}payments/orders/${data.orderID}/capture`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${user.token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
         });
         const captureData = await captureRes.json();
         if (!captureData?.payment?.transactionID) throw new Error("Error al capturar el pago.");
@@ -110,7 +146,10 @@ function Plan() {
         const tarotistaSeleccionado = JSON.parse(localStorage.getItem("tarotistaSeleccionado"));
         const sessionRes = await fetch(`${Api}sessions`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${user.token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
           body: JSON.stringify({
             usuario: user._id,
             tarotista: tarotistaSeleccionado._id,
@@ -205,6 +244,7 @@ function Plan() {
           <p>Cargando PayPal...</p>
         )}
         {error && <p className="text-red-500 mt-4">{error}</p>}
+
         <div className="flex justify-center w-full mt-6">
           <Goback />
         </div>

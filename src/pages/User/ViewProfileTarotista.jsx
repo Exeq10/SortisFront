@@ -59,9 +59,9 @@ function ViewProfileTarotista() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ staggerChildren: 0.2, delayChildren: 0.3 }}
         >
-          {services.map((service, index) => (
+         {/*  {services.map((service, index) => (
             <ServiceCard key={index} service={service} />
-          ))}
+          ))} */}
         </motion.ul>
       </div>
 

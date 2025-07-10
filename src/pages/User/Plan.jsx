@@ -30,7 +30,7 @@ function Plan() {
       amount: 34.99,
       duration: 32 * 60 * 1000,
     },
-    "Plan 2 minutos / $2.49": { amount: 2.49, duration: 2 * 60 * 1000 },
+    
   };
 
   useEffect(() => {

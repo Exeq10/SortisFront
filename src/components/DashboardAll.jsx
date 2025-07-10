@@ -43,7 +43,8 @@ function DashboardAll() {
   }, []);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3000");
+    const newSocket = io("https://sortisbackend.onrender.com", {
+      transports: ["websocket"],    });
     setSocket(newSocket);
 
     newSocket.on("updateOnlineTarotistas", (onlineIds) => {

@@ -24,7 +24,7 @@ function Landing() {
 
       {/* Contenido principal */}
       <div className="mb-6 relative z-10">
-        <img src="/logo.png" alt="Logo" className="w-60 lg:w-56 sm:w-56" />
+        <img src="/logo.webp" alt="Logo" className="w-60 lg:w-56 sm:w-56" />
       </div>
 
       <div id="buttons" className="flex flex-col w-full gap-8 lg:w-[25%] relative sm:w-[60%] z-10">

@@ -112,7 +112,7 @@ function LoginTarot() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="mb-6 rounded-br-[45%] w-screen sm:w-3/4 lg:w-2/4 bg-gradient-to-r from-softBlue to-secundario h-full flex flex-col justify-center items-center"
       >
-        <img src="/logo.png" alt="Logo" className="w-40 sm:w-56 lg:w-32" />
+        <img src="/logo.webp" alt="Logo" className="w-40 sm:w-56 lg:w-32" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

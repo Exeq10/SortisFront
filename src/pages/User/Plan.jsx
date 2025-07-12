@@ -72,7 +72,7 @@ function Plan() {
   if (document.getElementById("paypal-button-container").childNodes.length) return;
 
   window.paypal.Buttons({
-    createOrder: async () => {
+   createOrder: async (data, actions) => {
       const cart = {
         email: user?.email,
         totalAmount: amount,

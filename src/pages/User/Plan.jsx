@@ -98,48 +98,51 @@ function Plan() {
         const orderData = await res.json();
         if (!orderData?.orderID) throw new Error(orderData.message || "Error al crear la orden");
 
-        // guardamos cart para luego enviarlo en capture
         localStorage.setItem("lastCart", JSON.stringify(cart));
         return orderData.orderID;
       },
       onApprove: async (data) => {
-        toast.success("Pago aprobado, procesando...");
+        try {
+          toast.success("Pago aprobado, procesando...");
+          const cart = JSON.parse(localStorage.getItem("lastCart"));
 
-        const cart = JSON.parse(localStorage.getItem("lastCart"));
+          const captureRes = await fetch(`${Api}payments/orders/capture`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
+            },
+            body: JSON.stringify({ orderID: data.orderID, cart }),
+          });
+          const captureData = await captureRes.json();
+          if (!captureData?.payment?.transactionID) throw new Error("Error al capturar el pago.");
 
-        const captureRes = await fetch(`${Api}payments/orders/capture`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
-          },
-          body: JSON.stringify({ orderID: data.orderID, cart }), // enviamos orderID + cart
-        });
-        const captureData = await captureRes.json();
-        if (!captureData?.payment?.transactionID) throw new Error("Error al capturar el pago.");
+          const duracionBase = parseInt(localStorage.getItem("chatDuracionPlanBase")) || 0;
+          const minutosCupon = cuponSeleccionado?.minutes || 0;
+          const tiempoFinal = Math.floor(duracionBase / 60) + minutosCupon;
 
-        const duracionBase = parseInt(localStorage.getItem("chatDuracionPlanBase")) || 0;
-        const minutosCupon = cuponSeleccionado?.minutes || 0;
-        const tiempoFinal = Math.floor(duracionBase / 60) + minutosCupon;
+          const tarotistaSeleccionado = JSON.parse(localStorage.getItem("tarotistaSeleccionado"));
 
-        const tarotistaSeleccionado = JSON.parse(localStorage.getItem("tarotistaSeleccionado"));
+          const sessionRes = await fetch(`${Api}sessions`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
+            },
+            body: JSON.stringify({
+              usuario: user._id,
+              tarotista: tarotistaSeleccionado._id,
+              tiempoPlan: tiempoFinal,
+            }),
+          });
+          const sessionData = await sessionRes.json();
 
-        const sessionRes = await fetch(`${Api}sessions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
-          },
-          body: JSON.stringify({
-            usuario: user._id,
-            tarotista: tarotistaSeleccionado._id,
-            tiempoPlan: tiempoFinal,
-          }),
-        });
-        const sessionData = await sessionRes.json();
-
-        toast.success(`Pago exitoso. ID transacción: ${captureData.payment.transactionID}`);
-        navigate("/pago-exitoso", { state: { orderData: captureData, sessionData } });
+          toast.success(`Pago exitoso. ID transacción: ${captureData.payment.transactionID}`);
+          navigate("/pago-exitoso", { state: { orderData: captureData, sessionData } });
+        } catch (err) {
+          console.error("Error en onApprove:", err);
+          setError("Ocurrió un error al procesar el pago.");
+        }
       },
       onError: (err) => {
         console.error("Error en PayPal:", err);

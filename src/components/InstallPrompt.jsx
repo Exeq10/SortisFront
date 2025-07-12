@@ -53,7 +53,7 @@ const InstallPrompt = () => {
             transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <img
-              src="/logo.png"
+              src="/logo.webp"
               alt="Logo"
               className="w-24 mx-auto mb-4 drop-shadow-lg"
             />

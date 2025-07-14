@@ -48,11 +48,22 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
+// ✅ Ajustado: siempre intenta responder del cache, y si no hay, responde index.html
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response =>
-      response || fetch(event.request).catch(() => caches.match('/index.html'))
-    )
+    fetch(event.request)
+      .then(response => {
+        // Opcional: guardar en cache la respuesta nueva
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request).then(cachedResponse => {
+          if (cachedResponse) return cachedResponse;
+          return caches.match('/index.html'); // fallback final
+        });
+      })
   );
 });
 
@@ -81,7 +92,7 @@ self.addEventListener('push', event => {
       self.registration.showNotification(title, options),
       self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
         clients.forEach(client => {
-          client.postMessage({ type: 'play_sound' }); // 🔊 Pedir al cliente que reproduzca el sonido
+          client.postMessage({ type: 'play_sound' });
         });
       }),
     ])

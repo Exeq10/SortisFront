@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TiChevronRight } from "react-icons/ti";
 import { RiExchangeLine } from "react-icons/ri";
 import { Link, useNavigate } from "react-router-dom";
@@ -20,17 +20,43 @@ function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
+  const [isCliked, setIsCliked] = useState(false);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-const [isCliked, setIsCliked] = useState(false);
-  const handleClick = () => { 
+  // Verificar token en localStorage al cargar el componente
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-    setIsCliked(!isCliked);
-    }
+      try {
+        const response = await fetch(`${Api}auth/verifyToken`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
+        const data = await response.json();
+
+        if (response.ok) {
+          dispatch(setUser(data.user));
+          navigate("/dashboardUser");
+        } else {
+          localStorage.removeItem("token");
+        }
+      } catch (error) {
+        localStorage.removeItem("token");
+      }
+    };
+
+    checkToken();
+  }, [dispatch, navigate]);
 
   const validateInputs = () => {
     let errors = [];
@@ -53,33 +79,35 @@ const [isCliked, setIsCliked] = useState(false);
   const showErrorsInToast = (errors) => {
     errors.forEach((error) => toast.error(error));
   };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsCliked(true); // Bloquea y muestra "Iniciando sesión..."
-  
+
     const errors = validateInputs();
     if (errors.length > 0) {
       showErrorsInToast(errors);
       setIsCliked(false);
       return;
     }
-  
+
     try {
       const response = await fetch(`${Api}auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         dispatch(setUser(data.user));
+        localStorage.setItem("token", data.token); // Guardar token en localStorage
         toast.success("Inicio de sesión exitoso");
-  
+
         if (data.user.isFirstLogin) {
           navigate("/onboarding");
-  
+
           await fetch(`${Api}auth/firstLoginDone`, {
             method: "PUT",
             headers: {
@@ -99,8 +127,8 @@ const [isCliked, setIsCliked] = useState(false);
       toast.error("Hubo un error al intentar iniciar sesión");
       setIsCliked(false);
     }
-  
   };
+
   return (
     <motion.section
       initial={{ scale: 0.8, opacity: 0 }}
@@ -126,7 +154,9 @@ const [isCliked, setIsCliked] = useState(false);
           onSubmit={handleLogin}
         >
           <div className="w-full flex flex-col items-center gap-3">
-            <label htmlFor="email" className="text-left text-white font-cinzel">Ingrese su email</label>
+            <label htmlFor="email" className="text-left text-white font-cinzel">
+              Ingrese su email
+            </label>
             <input
               className="bg-white w-full sm:w-[80%] lg:w-[90%] px-3 py-2 rounded-md"
               type="email"
@@ -137,7 +167,12 @@ const [isCliked, setIsCliked] = useState(false);
           </div>
 
           <div className="w-full flex flex-col items-center gap-3 mt-6">
-            <label htmlFor="password" className="text-left text-white font-cinzel">Ingrese su contraseña</label>
+            <label
+              htmlFor="password"
+              className="text-left text-white font-cinzel"
+            >
+              Ingrese su contraseña
+            </label>
             <div className="relative w-full sm:w-[80%] lg:w-[90%]">
               <input
                 className="bg-white w-full px-3 py-2 rounded-md"
@@ -157,25 +192,33 @@ const [isCliked, setIsCliked] = useState(false);
                 )}
               </div>
             </div>
-            <Link to={'/recoveryPass'} className="text-white underline mt-2">¿Has olvidado tu contraseña?</Link>
+            <Link
+              to={"/recoveryPass"}
+              className="text-white underline mt-2"
+            >
+              ¿Has olvidado tu contraseña?
+            </Link>
           </div>
           <motion.button
-  type="submit"
-  whileHover={isCliked ? {} : { scale: 1.1 }} // Desactiva hover si isCliked es true
-  whileTap={{ scale: 0.95 }}
-  disabled={isCliked}
-  className={`rounded-md mt-10 flex items-center justify-center font-cinzel px-6 py-3 w-full sm:w-[80%] lg:w-[60%]
+            type="submit"
+            whileHover={isCliked ? {} : { scale: 1.1 }} // Desactiva hover si isCliked es true
+            whileTap={{ scale: 0.95 }}
+            disabled={isCliked}
+            className={`rounded-md mt-10 flex items-center justify-center font-cinzel px-6 py-3 w-full sm:w-[80%] lg:w-[60%]
     bg-gradient-to-r from-primario to-[#323465] text-white transition-all duration-300
     ${isCliked ? "animate-pulse cursor-not-allowed" : "hover:scale-110"}`}
->
-  {isCliked ? "Iniciando sesión..." : "Iniciar sesión"}
-  <TiChevronRight className="ml-2" />
-</motion.button>
+          >
+            {isCliked ? "Iniciando sesión..." : "Iniciar sesión"}
+            <TiChevronRight className="ml-2" />
+          </motion.button>
         </motion.form>
       </motion.div>
 
       <div className="w-full flex justify-end px-6 mt-4">
-        <Link to={"/loginTarot"} className="px-4 py-2 bg-softBlue rounded-md text-white flex items-center justify-center">
+        <Link
+          to={"/loginTarot"}
+          className="px-4 py-2 bg-softBlue rounded-md text-white flex items-center justify-center"
+        >
           Tarotistas <RiExchangeLine />
         </Link>
       </div>

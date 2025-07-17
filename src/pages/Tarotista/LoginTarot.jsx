@@ -1,13 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { TiChevronRight } from "react-icons/ti";
 import { RiExchangeLine } from "react-icons/ri";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
-
-/* suscripcion a notificaciones  */
-
-
 
 /* Alertas */
 import { ToastContainer, toast } from "react-toastify";
@@ -25,15 +21,42 @@ function LoginTarot() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isCliked, setIsCliked] = useState(false);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const [isCliked, setIsCliked] = useState(false);
-  const handleClick = () => { 
+  // Verificar token al cargar componente
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = localStorage.getItem("tokenTarotista");
+      if (!token) return;
 
-    setIsCliked(!isCliked);
-    }
+      try {
+        const response = await fetch(`${Api}auth/verifyTokenTarotista`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
+        const data = await response.json();
+
+        if (response.ok) {
+          dispatch(setTarotista(data.user));
+          navigate("/dashboard");
+        } else {
+          localStorage.removeItem("tokenTarotista");
+          localStorage.removeItem("Tarotista");
+        }
+      } catch (error) {
+        localStorage.removeItem("tokenTarotista");
+        localStorage.removeItem("Tarotista");
+      }
+    };
+
+    checkToken();
+  }, [dispatch, navigate]);
 
   const validateInputs = () => {
     let errors = [];
@@ -59,11 +82,12 @@ function LoginTarot() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setIsCliked(true); // Bloquea y muestra "Iniciando sesión..."
+    setIsCliked(true);
 
     const errors = validateInputs();
     if (errors.length > 0) {
       showErrorsInToast(errors);
+      setIsCliked(false);
       return;
     }
 
@@ -77,23 +101,19 @@ function LoginTarot() {
       const data = await response.json();
 
       if (response.ok) {
-
-     
-        
-        localStorage.setItem('Tarotista',JSON.stringify(data.user))
-       
+        localStorage.setItem("Tarotista", JSON.stringify(data.user));
+        localStorage.setItem("tokenTarotista", data.token);
         dispatch(setTarotista(data.user));
 
         toast.success("Inicio de sesión exitoso");
-        navigate('/dashboard')
-
-      
+        navigate("/dashboard");
       } else {
         toast.error(data.message || "Credenciales incorrectas");
-        setIsCliked(false); // Bloquea y muestra "Iniciando sesión..."
+        setIsCliked(false);
       }
     } catch (error) {
       toast.error("Hubo un error al intentar iniciar sesión");
+      setIsCliked(false);
     }
   };
 
@@ -164,20 +184,18 @@ function LoginTarot() {
               </Link>
 
               <motion.button
-  type="submit"
-  whileHover={isCliked ? {} : { scale: 1.1 }} 
-  whileTap={{ scale: 0.95 }}
-  disabled={isCliked}
-  className={`rounded-md mt-10 flex items-center justify-center font-cinzel px-6 py-3 w-[90%] sm:w-[80%] lg:w-[60%]
+                type="submit"
+                whileHover={isCliked ? {} : { scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                disabled={isCliked}
+                className={`rounded-md mt-10 flex items-center justify-center font-cinzel px-6 py-3 w-[90%] sm:w-[80%] lg:w-[60%]
     bg-gradient-to-r from-primario to-[#323465] text-white transition-all duration-300
     ${isCliked ? "animate-pulse cursor-not-allowed" : "hover:scale-110"}`}
->
-  {isCliked ? "Iniciando sesión..." : "Iniciar sesión"}
-  <TiChevronRight className="ml-2" />
-</motion.button>
+              >
+                {isCliked ? "Iniciando sesión..." : "Iniciar sesión"}
+                <TiChevronRight className="ml-2" />
+              </motion.button>
             </div>
-
-          
           </form>
         </motion.div>
       </motion.div>

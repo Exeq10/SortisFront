@@ -1,36 +1,28 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import frasesTarot from "../../utils/phrases";
 import { IoMdMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import obtenerFraseAleatoria from "../../hooks/obtenerFrase";
-import Api from "../../utils/API";
-import { setTarotistas } from "../../redux/tarotistasSlice";
-import { toast } from "react-toastify";
 
 const linksMenu = [
-  {
-    label: "Inicio",
-    link: "/dashboardUser",
-  },
-  {
-    label: "Perfil",
-    link: "profile",
-  },
+  { label: "Inicio", link: "/dashboardUser" },
+  { label: "Perfil", link: "profile" },
   { label: "Novedades", link: "blog" },
   { label: "Favoritos (Proximamente)", link: "/favs" },
 ];
 
 function DashboardUser() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+  // 📦 Leer del store
+  const tarotistas = useSelector((state) => state.tarotistas);
+  const onlineTarotistas = useSelector((state) => state.onlineTarotistas);
+
+  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -76,6 +68,34 @@ function DashboardUser() {
               </Link>
             ))}
           </nav>
+
+          {/* Tarotistas online */}
+          <div className="mt-6 w-full">
+            <h3 className="font-cinzel text-primario mb-2">Tarotistas online:</h3>
+            {onlineTarotistas.length === 0 ? (
+              <p className="text-gray-500">Ningún tarotista conectado</p>
+            ) : (
+              <ul className="space-y-1">
+                {onlineTarotistas.map((id) => {
+                  const tarotista = tarotistas.find((t) => t._id === id);
+                  return tarotista ? (
+                    <li key={id} className="flex items-center space-x-2">
+                      {tarotista.image && (
+                        <img
+                          src={tarotista.image}
+                          alt={tarotista.name}
+                          className="w-6 h-6 rounded-full"
+                        />
+                      )}
+                      <span className="text-primario">{tarotista.name}</span>
+                    </li>
+                  ) : (
+                    <li key={id} className="text-primario">Tarotista desconocido</li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
 
           <div className="w-[90%] mt-16">
             <p className="text-md text-primario font-gara">

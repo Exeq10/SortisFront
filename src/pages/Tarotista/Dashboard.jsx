@@ -2,42 +2,64 @@ import { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { IoMdMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
+import { io } from "socket.io-client";
 
 const linksMenu = [
-  {
-    label: "Inicio",
-    link: "/dashboard",
-  },
-  {
-    label: "Perfil",
-    link: "profileTarot",
-  },
-  {
-    label: "Chats",
-    link: "chats",
-  },
+  { label: "Inicio", link: "/dashboard" },
+  { label: "Perfil", link: "profileTarot" },
+  { label: "Chats", link: "chats" },
   { label: "Entradas", link: "create" },
   { label: "Estadisticas", link: "statics" },
   { label: "Cupones", link: "coupons" },
- 
 ];
+
+const SOCKET_SERVER_URL = "https://sortisbackend.onrender.com/"; // Cambiar por tu URL backend
 
 function Dashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [socket, setSocket] = useState(null);
+  const [isOnline, setIsOnline] = useState(false);
   const navigate = useNavigate();
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-
   useEffect(() => {
-    setMenuOpen(false);
     const storedUser = localStorage.getItem("tarotista");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+
+  // Conectar socket solo si el tarotista está marcado online
+  useEffect(() => {
+    if (!user) return;
+
+    if (isOnline) {
+      const newSocket = io(SOCKET_SERVER_URL);
+      setSocket(newSocket);
+
+      newSocket.on("connect", () => {
+        console.log("Socket conectado con id:", newSocket.id);
+        newSocket.emit("registerTarotista", { userId: user._id });
+      });
+
+      return () => {
+        newSocket.disconnect();
+        setSocket(null);
+      };
+    } else {
+      // Si se pone offline, desconecta el socket
+      if (socket) {
+        socket.disconnect();
+        setSocket(null);
+      }
+    }
+  }, [isOnline, user]);
+
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+
+  const handleToggleOnline = () => {
+    setIsOnline((prev) => !prev);
+  };
 
   return (
     <section className="relative flex flex-col w-full md:w-[30%] m-auto justify-center items-center">
@@ -50,11 +72,28 @@ function Dashboard() {
         <div className="mt-10 pl-6">
           {user && (
             <div className="mb-6">
-              {/* Si tenés imagen de perfil */}
-              { <img src={user.image} alt="Perfil" className="w-16 h-16 rounded-full mb-2" /> }
+              {user.image && (
+                <img
+                  src={user.image}
+                  alt="Perfil"
+                  className="w-16 h-16 rounded-full mb-2"
+                />
+              )}
               <h2 className="text-white text-md font-bold font-cinzel">
                 ¡Hola, {user.name}!
               </h2>
+
+              {/* Botón para marcar online/offline */}
+              <button
+                onClick={handleToggleOnline}
+                className={`mt-3 px-4 py-2 rounded-md font-cinzel ${
+                  isOnline
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-gray-600 hover:bg-gray-700"
+                } text-white transition`}
+              >
+                {isOnline ? "Online" : "Offline"}
+              </button>
             </div>
           )}
 

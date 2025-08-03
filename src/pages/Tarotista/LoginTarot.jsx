@@ -5,6 +5,10 @@ import { RiExchangeLine } from "react-icons/ri";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 
+import { io } from "socket.io-client";
+
+let socket
+
 /* Alertas */
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -106,7 +110,17 @@ function LoginTarot() {
         dispatch(setTarotista(data.user));
 
         toast.success("Inicio de sesión exitoso");
+         if (!socket) {
+          socket = io(Api); // Api debe ser algo como "https://..."
+          socket.on("connect", () => {
+            console.log("✅ Tarotista conectado al socket con ID:", socket.id);
+            // Avisamos que está online
+            socket.emit("tarotistaOnline", data.user._id);
+          });
+        }
+
         navigate("/dashboard");
+     
       } else {
         toast.error(data.message || "Credenciales incorrectas");
         setIsCliked(false);

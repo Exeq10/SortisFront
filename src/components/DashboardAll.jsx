@@ -37,31 +37,37 @@ function DashboardAll() {
 
   const [socket, setSocket] = useState(null);
 
-  useEffect(() => {
-    requestPermission();
-    setupOnMessageListener();
-  }, []);
+useEffect(() => {
+  console.log("🟢 Intentando conectar con Socket.io...");
+  const newSocket = io(`http://localhost:3000`, );
 
-  useEffect(() => {
-    const newSocket = io("https://sortisbackend.onrender.com", {
-      transports: ["websocket"],    });
-    setSocket(newSocket);
+  newSocket.on("connect", () => {
+    console.log("✅ Conectado al servidor Socket.io con ID:", newSocket.id);
+  });
 
-    newSocket.on("updateOnlineTarotistas", (onlineIds) => {
-      const nuevos = onlineIds.filter((id) => !onlineTarotistas.includes(id));
-      if (nuevos.length > 0) {
-        toast.success("¡Un nuevo tarotista se ha conectado!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      }
-      dispatch(setOnlineTarotistas(onlineIds));
-    });
+  newSocket.on("updateOnlineTarotistas", (onlineIds) => {
+    console.log("📥 Recibido updateOnlineTarotistas:", onlineIds);
+    const nuevos = onlineIds.filter((id) => !onlineTarotistas.includes(id));
+    if (nuevos.length > 0) {
+      toast.success("¡Un nuevo tarotista se ha conectado!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+    dispatch(setOnlineTarotistas(onlineIds));
+  });
 
-    return () => {
-      newSocket.disconnect();
-    };
-  }, [onlineTarotistas]);
+  newSocket.on("disconnect", () => {
+    console.log("🔌 Desconectado del servidor Socket.io");
+  });
+
+  setSocket(newSocket);
+
+  return () => {
+    console.log("🧹 Desmontando y cerrando socket...");
+    newSocket.disconnect();
+  };
+}, [onlineTarotistas]);
 
   useEffect(() => {
     const fetchTarotistas = async () => {

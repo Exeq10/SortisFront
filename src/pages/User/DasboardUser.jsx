@@ -4,12 +4,17 @@ import { IoMdMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import obtenerFraseAleatoria from "../../hooks/obtenerFrase";
+import { io } from "socket.io-client";
+import { setOnlineTarotistas } from "../../redux/onlineTarotistasSlice";
+import { addFavorito, removeFavorito, setFavoritos } from "../../redux/favoritosSlice";
+
+const SOCKET_SERVER_URL = "https://sortisbackend.onrender.com/";
 
 const linksMenu = [
   { label: "Inicio", link: "/dashboardUser" },
   { label: "Perfil", link: "profile" },
   { label: "Novedades", link: "blog" },
-  { label: "Favoritos (Proximamente)", link: "/favs" },
+  { label: "Favoritos", link: "favs" },
 ];
 
 function DashboardUser() {
@@ -17,10 +22,11 @@ function DashboardUser() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [socket, setSocket] = useState(null);
 
-  // 📦 Leer del store
   const tarotistas = useSelector((state) => state.tarotistas);
   const onlineTarotistas = useSelector((state) => state.onlineTarotistas);
+  const favoritos = useSelector((state) => state.favoritos);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
@@ -30,7 +36,32 @@ function DashboardUser() {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-  }, []);
+
+    // Cargar favoritos desde localStorage
+    const storedFavs = localStorage.getItem("favoritos");
+    if (storedFavs) {
+      dispatch(setFavoritos(JSON.parse(storedFavs)));
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    const newSocket = io(SOCKET_SERVER_URL);
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("🟢 Usuario conectado al socket con ID:", newSocket.id);
+    });
+
+    newSocket.on("updateOnlineTarotistas", (data) => {
+      console.log("✅ Tarotistas online actualizados:", data);
+      dispatch(setOnlineTarotistas(data));
+    });
+
+    return () => {
+      newSocket.disconnect();
+      console.log("🔌 Socket desconectado");
+    };
+  }, [dispatch]);
 
   return (
     <section className="relative flex flex-col w-full md:w-[30%] m-auto justify-center items-center">
@@ -78,6 +109,8 @@ function DashboardUser() {
               <ul className="space-y-1">
                 {onlineTarotistas.map((id) => {
                   const tarotista = tarotistas.find((t) => t._id === id);
+                  const isFavorito = favoritos.includes(id);
+
                   return tarotista ? (
                     <li key={id} className="flex items-center space-x-2">
                       {tarotista.image && (
@@ -88,6 +121,18 @@ function DashboardUser() {
                         />
                       )}
                       <span className="text-primario">{tarotista.name}</span>
+                      <button
+                        onClick={() =>
+                          isFavorito
+                            ? dispatch(removeFavorito(id))
+                            : dispatch(addFavorito(id))
+                        }
+                        className={`ml-2 px-2 py-0 rounded ${
+                          isFavorito ? "bg-red-500" : "bg-green-500"
+                        } text-white text-xs`}
+                      >
+                        {isFavorito ? "Quitar" : "Fav"}
+                      </button>
                     </li>
                   ) : (
                     <li key={id} className="text-primario">Tarotista desconocido</li>

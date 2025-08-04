@@ -24,6 +24,7 @@ import HistorialConversacionesTarotista from "./pages/Tarotista/HistorialConvers
 import CouponManager from "./pages/Tarotista/CouponManager.jsx";
 import NotificationListener from "./components/NotificationListener.jsx";
 
+
 /* Sección usuarios */
 const Landing = lazy(() => import("./pages/User/Landing"));
 const Register = lazy(() => import("./pages/User/Register"));
@@ -34,6 +35,7 @@ const SelectTarotista = lazy(() => import("./pages/User/SelectTarotista"));
 const PlanSelect = lazy(() => import("./pages/User/PlanSelect"));
 const Plan = lazy(() => import("./pages/User/Plan"));
 const DashboardAll = lazy(() => import("./components/DashboardAll"));
+const Favoritos = lazy(() => import("./pages/User/Favoritos.jsx"));
 
 /* Sección tarotistas */
 const LoginTarot = lazy(() => import("./pages/Tarotista/LoginTarot"));
@@ -71,6 +73,7 @@ const router = createBrowserRouter([
       { path: "/pago-exitoso", element: <PagoExitoso /> },
       { path: "/chat", element: <ChatComponent/> },
       { path:"/post/:id", element:<PostDetail />},
+       {path: 'favs',element: <Favoritos/> },
 
       { path: "/tarotistaProfile/:nombre", element: <ViewProfileTarotista /> },
 
@@ -80,7 +83,9 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardAll /> },
           { path: "profile", element: <Profile /> },
-          {path: 'blog',element: <BlogPosts/> }
+          {path: 'blog',element: <BlogPosts/> },
+           {path: 'favs',element: <Favoritos/> },
+         
         ],
       },
     ],

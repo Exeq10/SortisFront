@@ -13,13 +13,13 @@ const linksMenu = [
   { label: "Cupones", link: "coupons" },
 ];
 
-const SOCKET_SERVER_URL = "https://sortisbackend.onrender.com/"; // Cambiar por tu URL backend
+const SOCKET_SERVER_URL = "https://sortisbackend.onrender.com/";
 
 function Dashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [socket, setSocket] = useState(null);
-  const [isOnline, setIsOnline] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,16 +29,14 @@ function Dashboard() {
     }
   }, []);
 
-  // Conectar socket solo si el tarotista está marcado online
   useEffect(() => {
     if (!user) return;
-
     if (isOnline) {
       const newSocket = io(SOCKET_SERVER_URL);
       setSocket(newSocket);
 
       newSocket.on("connect", () => {
-        console.log("Socket conectado con id:", newSocket.id);
+        console.log("Socket conectado:", newSocket.id);
         newSocket.emit("registerTarotista", { userId: user._id });
       });
 
@@ -47,7 +45,6 @@ function Dashboard() {
         setSocket(null);
       };
     } else {
-      // Si se pone offline, desconecta el socket
       if (socket) {
         socket.disconnect();
         setSocket(null);
@@ -57,19 +54,17 @@ function Dashboard() {
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
-  const handleToggleOnline = () => {
-    setIsOnline((prev) => !prev);
-  };
+  const handleToggleOnline = () => setIsOnline(prev => !prev);
 
   return (
     <section className="relative flex flex-col w-full md:w-[30%] m-auto justify-center items-center">
-      {/* Menú desplegable */}
+      {/* Menú */}
       <div
         className={`fixed top-0 left-0 h-full w-[70%] bg-gradient-to-b from-softBlue to-accent shadow-lg transform ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 z-50`}
+        } transition-transform duration-300 z-50 flex flex-col justify-between`}
       >
-        <div className="mt-10 pl-6">
+        <div className="mt-10 pl-6 pr-4">
           {user && (
             <div className="mb-6">
               {user.image && (
@@ -83,7 +78,6 @@ function Dashboard() {
                 ¡Hola, {user.name}!
               </h2>
 
-              {/* Botón para marcar online/offline */}
               <button
                 onClick={handleToggleOnline}
                 className={`mt-3 px-4 py-2 rounded-md font-cinzel ${
@@ -111,14 +105,14 @@ function Dashboard() {
           </nav>
         </div>
 
-        <div className="flex justify-center w-full">
+        <div className="mb-6 flex justify-center w-full">
           <button
             onClick={() => {
               localStorage.clear();
               setUser(null);
               navigate("/");
             }}
-            className="w-[90%] font-cinzel border-2 border-white px-5 py-1 rounded-md mt-64 hover:bg-highlight hover:text-white duration-200 bg-primario text-white"
+            className="w-[90%] font-cinzel border-2 border-white px-5 py-1 rounded-md hover:bg-highlight hover:text-white duration-200 bg-primario text-white"
           >
             Salir
           </button>

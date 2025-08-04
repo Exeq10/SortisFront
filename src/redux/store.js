@@ -4,13 +4,15 @@ import tarotistasReducer from "./tarotistasSlice";
 import tarotistaReducer from "./tarotistaSlice";
 import postReducer from "./postSlice"; 
 import onlineTarotistasReducer from "./onlineTarotistasSlice";
+import favoritosReducer from "./favoritosSlice";
 
 // Función para guardar en localStorage
 const saveToLocalStorage = (state) => {
   try {
     localStorage.setItem("user", JSON.stringify(state.user));
     localStorage.setItem("tarotista", JSON.stringify(state.tarotista));
-    localStorage.setItem("post",JSON.stringify(state.post)) 
+    localStorage.setItem("posts", JSON.stringify(state.posts));
+    localStorage.setItem("favoritos", JSON.stringify(state.favoritos));
   } catch (error) {
     console.error("Error guardando en localStorage", error);
   }
@@ -21,20 +23,21 @@ const loadFromLocalStorage = () => {
     const storedUser = localStorage.getItem("user");
     const storedTarotista = localStorage.getItem("tarotista");
     const storedPosts = localStorage.getItem("posts");
+    const storedFavoritos = localStorage.getItem("favoritos");
 
-    console.log('Cargando desde localStorage:', { storedUser, storedTarotista, storedPosts });
+    console.log('Cargando desde localStorage:', { storedUser, storedTarotista, storedPosts, storedFavoritos });
 
     return {
       user: storedUser ? JSON.parse(storedUser) : {},
       tarotista: storedTarotista ? JSON.parse(storedTarotista) : {},
       posts: storedPosts ? JSON.parse(storedPosts) : [],
+      favoritos: storedFavoritos ? JSON.parse(storedFavoritos) : [],
     };
   } catch (error) {
     console.error("Error cargando desde localStorage", error);
-    return { user: {}, tarotista: {}, posts: [] };
+    return { user: {}, tarotista: {}, posts: [], favoritos: [] };
   }
 };
-
 
 const store = configureStore({
   reducer: {
@@ -43,8 +46,9 @@ const store = configureStore({
     tarotista: tarotistaReducer,
     posts: postReducer, 
     onlineTarotistas: onlineTarotistasReducer,
+    favoritos: favoritosReducer,
   },
-  preloadedState: loadFromLocalStorage(), // Pasar ambos datos (user y tarotista) al estado inicial
+  preloadedState: loadFromLocalStorage(),
 });
 
 // Suscribirse a los cambios en el store para guardar en localStorage

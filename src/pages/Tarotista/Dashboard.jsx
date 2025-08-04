@@ -29,31 +29,43 @@ function Dashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    if (!user) return;
+ useEffect(() => {
+  if (!user) return;
 
-    const newSocket = io(SOCKET_SERVER_URL);
-    setSocket(newSocket);
+  const newSocket = io(SOCKET_SERVER_URL);
+  setSocket(newSocket);
 
-    newSocket.on("connect", () => {
-      console.log("Socket conectado:", newSocket.id);
-      newSocket.emit("registerTarotista", { userId: user._id, online: true });
-    });
+  newSocket.on("connect", () => {
+    console.log("Socket conectado:", newSocket.id);
+    // 🔁 Siempre lo registra como online al conectar
+    newSocket.emit("registerTarotista", { userId: user._id, online: true });
+  });
 
-    return () => {
-      newSocket.disconnect();
-      setSocket(null);
-    };
-  }, [user]);
+  // ❌ NO enviamos "online: false" aquí para permitir reconexión automática sin perder estado
+  return () => {
+    newSocket.disconnect(); // Se desconecta pero sigue online en el servidor
+    setSocket(null);
+  };
+}, [user]);
 
-  useEffect(() => {
-    if (socket && user) {
-      socket.emit("registerTarotista", { userId: user._id, online: isOnline });
-    }
-  }, [isOnline]);
+useEffect(() => {
+  if (socket && user) {
+    socket.emit("registerTarotista", { userId: user._id, online: isOnline });
+  }
+}, [isOnline]);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
-  const handleToggleOnline = () => setIsOnline(prev => !prev);
+ const handleToggleOnline = () => {
+  const newStatus = !isOnline;
+  setIsOnline(newStatus);
+
+  if (socket && user) {
+    socket.emit("registerTarotista", {
+      userId: user._id,
+      online: newStatus,
+    });
+  }
+};
 
   return (
     <section className="relative flex flex-col w-full md:w-[30%] m-auto justify-center items-center">

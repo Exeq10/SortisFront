@@ -31,29 +31,28 @@ function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    if (isOnline) {
-      const newSocket = io(SOCKET_SERVER_URL);
-      setSocket(newSocket);
 
-      newSocket.on("connect", () => {
-        console.log("Socket conectado:", newSocket.id);
-        newSocket.emit("registerTarotista", { userId: user._id });
-      });
+    const newSocket = io(SOCKET_SERVER_URL);
+    setSocket(newSocket);
 
-      return () => {
-        newSocket.disconnect();
-        setSocket(null);
-      };
-    } else {
-      if (socket) {
-        socket.disconnect();
-        setSocket(null);
-      }
+    newSocket.on("connect", () => {
+      console.log("Socket conectado:", newSocket.id);
+      newSocket.emit("registerTarotista", { userId: user._id, online: true });
+    });
+
+    return () => {
+      newSocket.disconnect();
+      setSocket(null);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (socket && user) {
+      socket.emit("registerTarotista", { userId: user._id, online: isOnline });
     }
-  }, [isOnline, user]);
+  }, [isOnline]);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
-
   const handleToggleOnline = () => setIsOnline(prev => !prev);
 
   return (
@@ -108,6 +107,13 @@ function Dashboard() {
         <div className="mb-6 flex justify-center w-full">
           <button
             onClick={() => {
+              if (socket && user) {
+                socket.emit("registerTarotista", {
+                  userId: user._id,
+                  online: false,
+                });
+                socket.disconnect();
+              }
               localStorage.clear();
               setUser(null);
               navigate("/");

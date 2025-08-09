@@ -47,8 +47,8 @@ function Tarotista({ tarotista, online }) {
     <img src={image} alt={name} className="object-cover w-full h-full" />
   </div>
   <div
-    className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white z-10 ${
-      online ? "bg-green-500" : "bg-gray-400"
+    className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white z-10 
+       bg-green-500 "
     }`}
     title={online ? "Disponible" : "Desconectado"}
   />

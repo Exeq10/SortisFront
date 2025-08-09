@@ -17,10 +17,11 @@ function Plan() {
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
 
+  // 🔹 Planes actualizados
   const planData = {
-    "Plan 5 minutos + 2 free / $9.99": { amount: 9.99, duration: 7 * 60 * 1000 },
-    "Plan 15 minutos + 2 free / $19.99": { amount: 19.99, duration: 17 * 60 * 1000 },
-    "Plan 30 minutos + 2 free / $34.99": { amount: 34.99, duration: 32 * 60 * 1000 },
+    "5 minutos (lectura rápida de 1-2 cartas) / $4.99": { amount: 4.99, duration: 5 * 60 * 1000 },
+    "15 minutos (lectura detallada de una pregunta) / $9.99": { amount: 9.99, duration: 15 * 60 * 1000 },
+    "30 minutos (lectura completa + canalización) / $17.99": { amount: 17.99, duration: 30 * 60 * 1000 },
   };
 
   useEffect(() => {
@@ -67,101 +68,100 @@ function Plan() {
     loadPayPalScript();
   }, []);
 
- useEffect(() => {
-  if (!sdkReady || !window.paypal || !amount || !user?.token) return;
-  if (document.getElementById("paypal-button-container").childNodes.length) return;
+  useEffect(() => {
+    if (!sdkReady || !window.paypal || !amount || !user?.token) return;
+    if (document.getElementById("paypal-button-container").childNodes.length) return;
 
-  window.paypal.Buttons({
-   createOrder: async (data, actions) => {
-      const cart = {
-        email: user?.email,
-        totalAmount: amount,
-        items: [{
-          name: decodeURIComponent(plan),
-          price: amount,
-          quantity: 1,
-          description: "Suscripción de Plan",
-          sku: `PLAN-${amount}`,
-        }],
-        tarotista: JSON.parse(localStorage.getItem("tarotistaSeleccionado")),
-        user: user._id || user.id,
-      };
+    window.paypal.Buttons({
+      createOrder: async (data, actions) => {
+        const cart = {
+          email: user?.email,
+          totalAmount: amount,
+          items: [{
+            name: decodeURIComponent(plan),
+            price: amount,
+            quantity: 1,
+            description: "Suscripción de Plan",
+            sku: `PLAN-${amount}`,
+          }],
+          tarotista: JSON.parse(localStorage.getItem("tarotistaSeleccionado")),
+          user: user._id || user.id,
+        };
 
-      localStorage.setItem("lastCart", JSON.stringify(cart));
+        localStorage.setItem("lastCart", JSON.stringify(cart));
 
-      // ✅ Crear orden en backend (opcional, si querés registrar carrito):
-      await fetch(`${Api}payments/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify({ cart }),
-      });
-
-      return actions.order.create({
-        purchase_units: [{
-          amount: { value: amount.toString() }
-        }]
-      });
-    },
-    onApprove: async (data, actions) => {
-      try {
-        toast.success("Pago aprobado, capturando...");
-        const paypalDetails = await actions.order.capture();
-
-        const cart = JSON.parse(localStorage.getItem("lastCart"));
-
-        // Enviar al backend para guardar el pago
-        const captureRes = await fetch(`${Api}payments/orders/capture`, {
+        await fetch(`${Api}payments/orders`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${user.token}`,
           },
-          body: JSON.stringify({
-            orderID: data.orderID,
-            cart,
-            paypalDetails
-          }),
+          body: JSON.stringify({ cart }),
         });
-        const captureData = await captureRes.json();
 
-        if (!captureData?.payment?.transactionID) throw new Error("Error al registrar el pago.");
-
-        const duracionBase = parseInt(localStorage.getItem("chatDuracionPlanBase")) || 0;
-        const minutosCupon = cuponSeleccionado?.minutes || 0;
-        const tiempoFinal = Math.floor(duracionBase / 60) + minutosCupon;
-
-        const tarotistaSeleccionado = JSON.parse(localStorage.getItem("tarotistaSeleccionado"));
-
-        const sessionRes = await fetch(`${Api}sessions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
-          },
-          body: JSON.stringify({
-            usuario: user._id,
-            tarotista: tarotistaSeleccionado._id,
-            tiempoPlan: tiempoFinal,
-          }),
+        return actions.order.create({
+          purchase_units: [{
+            amount: { value: amount.toString() }
+          }]
         });
-        const sessionData = await sessionRes.json();
+      },
+      onApprove: async (data, actions) => {
+        try {
+          toast.success("Pago aprobado, capturando...");
+          const paypalDetails = await actions.order.capture();
 
-        toast.success(`Pago exitoso. ID transacción: ${captureData.payment.transactionID}`);
-        navigate("/pago-exitoso", { state: { orderData: captureData, sessionData } });
-      } catch (err) {
-        console.error("Error en onApprove:", err);
+          const cart = JSON.parse(localStorage.getItem("lastCart"));
+
+          const captureRes = await fetch(`${Api}payments/orders/capture`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
+            },
+            body: JSON.stringify({
+              orderID: data.orderID,
+              cart,
+              paypalDetails
+            }),
+          });
+          const captureData = await captureRes.json();
+
+          if (!captureData?.payment?.transactionID) throw new Error("Error al registrar el pago.");
+
+          const duracionBase = parseInt(localStorage.getItem("chatDuracionPlanBase")) || 0;
+          const minutosCupon = cuponSeleccionado?.minutes || 0;
+          const tiempoFinal = Math.floor(duracionBase / 60) + minutosCupon;
+
+          const tarotistaSeleccionado = JSON.parse(localStorage.getItem("tarotistaSeleccionado"));
+
+          const sessionRes = await fetch(`${Api}sessions`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
+            },
+            body: JSON.stringify({
+              usuario: user._id,
+              tarotista: tarotistaSeleccionado._id,
+              tiempoPlan: tiempoFinal,
+            }),
+          });
+          const sessionData = await sessionRes.json();
+
+          toast.success(`Pago exitoso. ID transacción: ${captureData.payment.transactionID}`);
+          navigate("/pago-exitoso", { state: { orderData: captureData, sessionData } });
+        } catch (err) {
+          console.error("Error en onApprove:", err);
+          setError("Ocurrió un error al procesar el pago.");
+        }
+      },
+      onError: (err) => {
+        console.error("Error en PayPal:", err);
         setError("Ocurrió un error al procesar el pago.");
-      }
-    },
-    onError: (err) => {
-      console.error("Error en PayPal:", err);
-      setError("Ocurrió un error al procesar el pago.");
-    },
-  }).render("#paypal-button-container");
-}, [sdkReady, amount, user?.token, plan, user?.email, navigate, cuponSeleccionado]);
+      },
+    }).render("#paypal-button-container");
+  }, [sdkReady, amount, user?.token, plan, user?.email, navigate, cuponSeleccionado]);
+
   return (
     <div className="flex flex-col justify-center w-full items-center min-h-screen px-2 py-6">
       <div className="flex flex-col bg-white p-6 rounded-lg shadow-lg w-full items-center max-w-md">

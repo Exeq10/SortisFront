@@ -4,10 +4,13 @@
 RewriteEngine On
 RewriteBase /
 
-# Si no existe archivo o carpeta, enviar index.html
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ index.html [L]
+# Si el archivo o directorio existe, servirlo
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Si no existe, redirigir siempre a index.html
+RewriteRule . /index.html [L]
 
 # ============================
 # Cacheo inteligente para PWA
@@ -15,7 +18,7 @@ RewriteRule ^ index.html [L]
 <IfModule mod_expires.c>
   ExpiresActive On
 
-  # Archivos estáticos (caché fuerte)
+  # Archivos estáticos (cache fuerte)
   ExpiresByType image/jpg "access plus 1 month"
   ExpiresByType image/jpeg "access plus 1 month"
   ExpiresByType image/png "access plus 1 month"
@@ -24,10 +27,10 @@ RewriteRule ^ index.html [L]
   ExpiresByType text/css "access plus 1 month"
   ExpiresByType application/javascript "access plus 1 month"
 
-  # HTML y archivos críticos (no caché fuerte)
+  # HTML siempre actualizado
   ExpiresByType text/html "access plus 0 seconds"
 
-  # Archivos que deben actualizarse siempre
+  # Archivos críticos (no cachear nunca)
   <FilesMatch "(^service-worker\.js$|^manifest\.json$|^index\.html$)">
     ExpiresDefault "access plus 0 seconds"
     Header set Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"

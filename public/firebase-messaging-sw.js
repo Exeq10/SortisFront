@@ -48,31 +48,32 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// ✅ Ajustado: siempre intenta responder del cache, y si no hay, responde index.html
+// ✅ Manejo de fetch para SPA: sirve index.html si la ruta no existe físicamente
 self.addEventListener('fetch', event => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      caches.match('/index.html').then(response => {
+        return response || fetch('/index.html');
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // Opcional: guardar en cache la respuesta nueva
         const responseClone = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
         return response;
       })
-      .catch(() => {
-        return caches.match(event.request).then(cachedResponse => {
-          if (cachedResponse) return cachedResponse;
-          return caches.match('/index.html'); // fallback final
-        });
-      })
+      .catch(() => caches.match(event.request))
   );
 });
 
+// Push notifications
 self.addEventListener('push', event => {
   let data = {};
-  if (event.data) {
-    data = event.data.json();
-    console.log('[Push recibido]', data);
-  }
+  if (event.data) data = event.data.json();
 
   const title = data.notification?.title || 'Notificación';
   const body = data.notification?.body || 'Tienes una nueva notificación';
@@ -91,23 +92,24 @@ self.addEventListener('push', event => {
     Promise.all([
       self.registration.showNotification(title, options),
       self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
-        clients.forEach(client => {
-          client.postMessage({ type: 'play_sound' });
-        });
+        clients.forEach(client => client.postMessage({ type: 'play_sound' }));
       }),
     ])
   );
 });
 
+// ✅ Notification click: mantiene la última ruta abierta o abre la indicada
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const url = event.notification?.data?.url || '/login';
+  const url = event.notification?.data?.url || '/';
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
-      for (const client of clients) {
-        if (client.url === url && 'focus' in client) return client.focus();
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsArr => {
+      // Primero intenta enfocar alguna ventana abierta
+      for (const client of clientsArr) {
+        if ('focus' in client) return client.focus();
       }
+      // Si no hay, abre la URL que vino en la notificación
       return clients.openWindow(url);
     })
   );

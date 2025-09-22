@@ -48,7 +48,7 @@ function Tarotista({ tarotista, online }) {
   </div>
   <div
     className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white z-10 
-       bg-green-500 "
+      ${online ? "bg-green-500" : "bg-red-400"
     }`}
     title={online ? "Disponible" : "Desconectado"}
   />

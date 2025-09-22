@@ -89,16 +89,7 @@ useEffect(() => {
                 ¡Hola, {user.name}!
               </h2>
 
-              <button
-                onClick={handleToggleOnline}
-                className={`mt-3 px-4 py-2 rounded-md font-cinzel ${
-                  isOnline
-                    ? "bg-green-600 hover:bg-green-700"
-                    : "bg-gray-600 hover:bg-gray-700"
-                } text-white transition`}
-              >
-                {isOnline ? "Online" : "Offline"}
-              </button>
+             
             </div>
           )}
 

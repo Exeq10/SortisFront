@@ -2,6 +2,9 @@ import {
     TbZodiacAries, TbZodiacTaurus, TbZodiacGemini, TbZodiacCancer, TbZodiacLeo, TbZodiacVirgo, 
     TbZodiacLibra, TbZodiacScorpio, TbZodiacSagittarius, TbZodiacCapricorn, TbZodiacAquarius, TbZodiacPisces 
 } from "react-icons/tb";
+import { useNavigate } from "react-router-dom";
+
+
 
 // Lista de signos con nombres e íconos
 const zodiacSigns = [
@@ -20,16 +23,18 @@ const zodiacSigns = [
 ];
 
 // eslint-disable-next-line react/prop-types
-function SelectSigno({setState}) {
+function SelectSigno() {
 
 
-
+const navigate = useNavigate();
 /* funcion que toma el valor de signo y autoriza el cambio de componente */
     const handleSing = (e) => {
 
       localStorage.setItem('Signo',e)
 
-        setState(true)
+      navigate('/register')
+
+   
         
 
 

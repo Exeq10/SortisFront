@@ -3,29 +3,22 @@ import { CiBullhorn } from "react-icons/ci";
 import { TbCards } from "react-icons/tb";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-
-import obtenerFraseAleatoria from "../hooks/obtenerFrase";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setTarotistas } from "../redux/tarotistasSlice";
-import { setPosts } from "../redux/postSlice";
-import Api from "../utils/API";
-import { io } from "socket.io-client";
-import Tarotista from "./Tarotista";
-import PostWiewUser from "./PostWiewUser";
-import { setOnlineTarotistas } from "../redux/onlineTarotistasSlice";
-
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  requestPermission,
-  setupOnMessageListener,
-} from "../utils/notificationSetup";
+
+import obtenerFraseAleatoria from "../hooks/obtenerFrase";
+import useGlobalSocket from "../hooks/useGlobalSocket";
+import Tarotista from "./Tarotista";
+import PostWiewUser from "./PostWiewUser";
+import { setTarotistas } from "../redux/tarotistasSlice";
+import { setPosts } from "../redux/postSlice";
+import { setOnlineTarotistas } from "../redux/onlineTarotistasSlice";
+import Api from "../utils/API";
 
 function DashboardAll() {
   const dispatch = useDispatch();
@@ -35,81 +28,67 @@ function DashboardAll() {
   const posts = useSelector((state) => state.posts);
   const onlineTarotistas = useSelector((state) => state.onlineTarotistas);
 
-  const [socket, setSocket] = useState(null);
+  // Hook global de socket persistente
+  const { socket } = useGlobalSocket(token);
 
-useEffect(() => {
-  console.log("🟢 Intentando conectar con Socket.io...");
-  const newSocket = io(`http://localhost:3000`, );
+  // Listener de tarotistas online
+  useEffect(() => {
+    if (!socket) return;
 
-  newSocket.on("connect", () => {
-    console.log("✅ Conectado al servidor Socket.io con ID:", newSocket.id);
-  });
+    const handleUpdateOnline = (onlineIds) => {
+      const nuevos = onlineIds.filter((id) => !onlineTarotistas.includes(id));
+      if (nuevos.length > 0) {
+        toast.success("¡Un nuevo tarotista se ha conectado!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+      dispatch(setOnlineTarotistas(onlineIds));
+    };
 
-  newSocket.on("updateOnlineTarotistas", (onlineIds) => {
-    console.log("📥 Recibido updateOnlineTarotistas:", onlineIds);
-    const nuevos = onlineIds.filter((id) => !onlineTarotistas.includes(id));
-    if (nuevos.length > 0) {
-      toast.success("¡Un nuevo tarotista se ha conectado!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-    dispatch(setOnlineTarotistas(onlineIds));
-  });
+    socket.on("updateOnlineTarotistas", handleUpdateOnline);
 
-  newSocket.on("disconnect", () => {
-    console.log("🔌 Desconectado del servidor Socket.io");
-  });
+    return () => {
+      socket.off("updateOnlineTarotistas", handleUpdateOnline);
+    };
+  }, [socket, onlineTarotistas, dispatch]);
 
-  setSocket(newSocket);
-
-  return () => {
-    console.log("🧹 Desmontando y cerrando socket...");
-    newSocket.disconnect();
-  };
-}, [onlineTarotistas]);
-
+  // Obtener tarotistas
   useEffect(() => {
     const fetchTarotistas = async () => {
       try {
-        const response = await fetch(`${Api}users/tarotistas`, {
-          method: "GET",
+        const res = await fetch(`${Api}users/tarotistas`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (!response.ok) throw new Error("No se pudo obtener el perfil");
-        const data = await response.json();
+        if (!res.ok) throw new Error("No se pudo obtener el perfil");
+        const data = await res.json();
         dispatch(setTarotistas(data));
       } catch (error) {
         console.error("Error al obtener tarotistas:", error.message);
       }
     };
+    if (token && tarotistas.length === 0) fetchTarotistas();
+  }, [token, tarotistas.length, dispatch]);
 
-    if (token && tarotistas.length === 0) {
-      fetchTarotistas();
-    }
-  }, [token, dispatch]);
-
+  // Obtener posts
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`${Api}post/`, { method: "GET" });
-        if (!response.ok) throw new Error("No se pudieron obtener los posts");
-        const data = await response.json();
+        const res = await fetch(`${Api}post/`);
+        if (!res.ok) throw new Error("No se pudieron obtener los posts");
+        const data = await res.json();
         dispatch(setPosts(data || []));
       } catch (error) {
         console.error("Error al obtener posts:", error.message);
       }
     };
-
-    if (token && posts.length === 0) {
-      fetchPosts();
-    }
-  }, [token, dispatch]);
+    if (token && posts.length === 0) fetchPosts();
+  }, [token, posts.length, dispatch]);
 
   return (
     <div className="bg-white min-h-screen w-full">
       <ToastContainer />
+
       {/* Hero */}
       <div className="relative w-full h-60 flex items-center justify-center text-accent">
         <div className="text-center">
@@ -141,9 +120,8 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Contenido */}
+      {/* Estadísticas */}
       <div className="flex flex-col justify-center items-center px-4 mt-10">
-        {/* Estadísticas */}
         <motion.div
           className="grid grid-cols-2 md:grid-cols-3 gap-4 text-white mb-8"
           initial={{ opacity: 0 }}
@@ -218,7 +196,6 @@ useEffect(() => {
         >
           {tarotistas.map((tarotista, index) => {
             const isOnline = onlineTarotistas.includes(tarotista._id);
-
             return (
               <SwiperSlide key={index}>
                 <motion.div whileHover={{ scale: 1.02 }}>

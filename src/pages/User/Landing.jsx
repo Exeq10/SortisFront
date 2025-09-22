@@ -31,7 +31,7 @@ function Landing() {
         <Link to={'/login'} className="bg-gradient-to-r rounded-lg text-center text-lg text-white w-full font-cinzel from-primario px-6 py-3 sm:text-xl to-[#323465]">
           Iniciar Sesión
         </Link>
-        <Link to={'/register'} className="bg-white border border-violet-950 rounded-lg text-center text-lg font-cinzel px-6 py-3 sm:text-xl">
+        <Link to={'/signos'} className="bg-white border border-violet-950 rounded-lg text-center text-lg font-cinzel px-6 py-3 sm:text-xl">
           Registrarse
         </Link>
       </div>

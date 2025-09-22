@@ -23,6 +23,7 @@ import ChatTarotista from "./pages/Tarotista/ChatTarotista.jsx";
 import HistorialConversacionesTarotista from "./pages/Tarotista/HistorialConversacionesTarotista.jsx";
 import CouponManager from "./pages/Tarotista/CouponManager.jsx";
 import NotificationListener from "./components/NotificationListener.jsx";
+import SelectSigno from "./components/SelectSigno.jsx";
 
 
 /* Sección usuarios */
@@ -52,6 +53,7 @@ const router = createBrowserRouter([
   /* Rutas públicas */
   { path: "/", element: <Landing /> },
   { path: "/register", element: <Register /> },
+  { path: "/signos", element: <SelectSigno /> },
   { path: "/login", element: <Login /> },
   { path: "/loginTarot", element: <LoginTarot /> },
   { path: "/recoveryPass", element: <RecoverPassword /> },

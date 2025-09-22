@@ -63,7 +63,15 @@ self.addEventListener('fetch', event => {
     fetch(event.request)
       .then(response => {
         const responseClone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
+
+        // ✅ Solo cachear si es GET y http/https (evita POST y chrome-extension)
+        if (
+          event.request.method === 'GET' &&
+          (event.request.url.startsWith('http://') || event.request.url.startsWith('https://'))
+        ) {
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
+        }
+
         return response;
       })
       .catch(() => caches.match(event.request))

@@ -11,7 +11,7 @@ export default function useGlobalSocket(token, userId, type) {
     if (!token || !userId || !type) return;
 
     if (!socket) {
-      socket = io("http://localhost:3000", { auth: { token } });
+      socket = io("https://sortisbackend.onrender.com", { auth: { token } });
 
       socket.on("connect", () => {
         setIsConnected(true);
